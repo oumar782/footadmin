@@ -1,0 +1,80 @@
+/* Conserve tous vos styles existants */
+.user-list {
+  margin-top: 20px;
+}
+
+.search-container {
+  margin-bottom: 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column; /* Place le label au-dessus */
+  margin-top: 30px; /* Ajustement pour l'espace */
+  margin-left: 80px; /* Conserve votre marge */
+  max-width: 500px; /* Correspond à votre input */
+
+}
+
+.search-container:before {
+  content: '🔍';
+  position: absolute;
+  left: 15px;
+  top: calc(50% + 15px); /* Ajusté pour le label */
+  transform: translateY(-50%);
+  font-size: 16px;
+}
+
+.search-container label {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin-bottom: 8px; /* Espace entre label et input */
+  margin-left: 5px; /* Alignement avec l'input */
+}
+
+.search-input {
+  padding: 12px 15px 12px 40px;
+  border-radius: 30px;
+  border: 1px solid #ddd;
+  width: 100%;
+  font-size: 15px;
+  box-shadow: 0 0 0 3px rgba(1, 67, 3, 0.1); /* Ombre plus subtile */
+  transition: all 0.3s ease;
+  margin-top: 0; /* Reset de la marge top */
+}
+
+.search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+  
+  .user-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+  }
+  
+  .no-results {
+    text-align: center;
+    color: var(--gray-color);
+    margin-top: 50px;
+    font-size: 18px;
+    padding: 30px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+  }
+  
+  .no-results:before {
+    content: '🔍';
+    display: block;
+    font-size: 40px;
+    margin-bottom: 15px;
+  }
+  
+  @media (max-width: 768px) {
+    .user-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  

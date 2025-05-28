@@ -1,0 +1,116 @@
+.user-management {
+  width: 100%;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 70px;
+}
+
+.action-bars {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  background-color: white;
+  padding: 8.5px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 2);
+
+  margin: 100px 80px 0px 50px; /* Réduction de la marge supérieure */
+  position: relative;
+}
+
+.action-bars h2 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--secondary-color);
+}
+
+.btn-primary {
+  padding: 10px 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 2);
+
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-primary:before {
+  content: '+';
+  font-size: 18px;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.notification {
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  border-radius: 8px;
+  position: relative;
+  animation: slideIn 0.3s, fadeOut 0.5s 2.5s;
+  display: flex;
+  align-items: center;
+}
+
+.notification:before {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+.notification.success {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.notification.success:before {
+  content: '✓';
+}
+
+.notification.error {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.notification.error:before {
+  content: '✗';
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px); 
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  .action-bars {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .action-bars h2 {
+    margin-bottom: 15px;
+  }
+  
+  .btn-primary {
+    margin-top: 10px;
+    width: 100%;
+    justify-content: center;
+  }
+}

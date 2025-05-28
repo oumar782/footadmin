@@ -1,0 +1,214 @@
+.app-headercont {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 2);
+    position: fixed;
+    z-index: 10;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 100%;
+    max-width: 1800px;
+    height: auto;
+    min-height: 60px;
+    margin: 0 auto;
+    margin-top: -29px;
+  }
+  
+  .app-header-containerss {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 10px;
+    max-width: 1600px;
+    margin: 0 auto;
+    height: 10%;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+  }
+  
+  .app-header-titlese {
+    display: flex;
+    align-items: center;
+    order: 1;
+    margin-left: -150px;
+  }
+  
+  .app-header-menu-button {
+    font-size: 1.4rem;
+    color: #555;
+    margin-right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+  }
+  
+  .app-header-heading {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #033e02;
+    white-space: nowrap;
+    max-width: 120px;
+    margin-left: 200px;
+  }
+  
+  .app-header-right-section {
+    display: flex;
+    align-items: center;
+    gap: 160px;
+    order: 2;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  
+  .app-header-time-info {
+    text-align: right;
+    font-size: 1rem;
+    color: #d50c0c;
+    min-width: 80px;
+    white-space: nowrap;
+  }
+  
+  .app-header-time {
+    display: inline-block;
+    font-weight: bold;
+    color: #070707;
+    font-size: 1rem;
+    margin-right: 4px;
+
+  }
+  
+  .app-header-date {
+    display: block;
+    font-size: 0.8rem;
+    margin-left: 250px;
+  }
+  
+  .app-header-notifications {
+    display: flex;
+    gap: 8px;
+    position: relative;
+    margin-right:90px;
+  }
+  
+  .app-header-notification-button {
+    position: relative;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #666;
+    cursor: pointer;
+    padding: 6px;
+    transition: color 0.2s ease;
+  }
+  
+  .app-header-notification-dot {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  
+  .app-header-user {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .app-header-user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-left: -350px;
+  }
+  
+  .app-header-user-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  @media (max-width: 1024px) {
+    .app-header-container {
+      padding: 8px 12px;
+    }
+    
+    .app-header-heading {
+      max-width: 100px;
+    }
+    
+    .app-header-time-info {
+      font-size: 0.75rem;
+      min-width: 70px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .app-header {
+      min-height: 50px;
+    }
+    
+    .app-header-menu-button {
+      font-size: 1.2rem;
+      margin-right: 8px;
+    }
+    
+    .app-header-heading {
+      font-size: 1rem;
+      max-width: 80px;
+    }
+    
+    .app-header-user-name {
+      max-width: 60px;
+    }
+    
+    .app-header-notification-button {
+      font-size: 1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .app-header-container {
+      padding: 6px 10px;
+    }
+    
+    .app-header-heading {
+      font-size: 0.9rem;
+      max-width: 70px;
+    }
+    
+    .app-header-time, 
+    .app-header-date {
+      font-size: 0.7rem;
+    }
+    
+    .app-header-user-avatar {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .app-header-user-name {
+      font-size: 0.7rem;
+      max-width: 50px;
+    }
+  }
+  
+  @media (max-width: 360px) {
+    .app-header-heading {
+      display: none;
+    }
+    
+    .app-header-title {
+      min-width: auto;
+    }
+    
+    .app-header-menu-button {
+      margin-right: 0;
+    }
+  }
