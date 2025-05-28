@@ -14,7 +14,7 @@ const Gestionclient = () => {
     { id: 7, name: "Nicolas Leroy", email: "nicolas.leroy@example.com", phone: "0687654321", address: "9 Avenue Montaigne, Paris", status: "active", date: "15/04/2023" },
     { id: 8, name: "Emma Bernard", email: "emma.bernard@example.com", phone: "0645678912", address: "22 Rue de Sèvres, Paris", status: "active", date: "10/04/2023" },
     { id: 9, name: "Alexandre Roux", email: "alexandre.roux@example.com", phone: "0634567891", address: "14 Rue de la Pompe, Paris", status: "inactive", date: "05/04/2023" },
-    { id: 10, name: "Camille Laurent", email: "camille.laurent@example.com", phone: "0678912345", address: "7 Rue de Passy, Paris", status: "active", date: "01/04/2023" }
+    { id: 10, name: "Camille Laurcvvvvent", email: "camille.laurent@example.com", phone: "0678912345", address: "7 Rue de Passy, Paris", status: "active", date: "01/04/2023" }
   ];
 
   // State
