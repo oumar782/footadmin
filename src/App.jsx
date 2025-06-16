@@ -10,6 +10,9 @@ import Reservation from './page/GestionReservation';
 import Partenaires from './page/Gestionpartenariats';
 import Demonstrations from './page/Demonstration';
 import ConnexionPage from './page/Authentification'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const MainLayout = () => {
   return (
     <div className="app">
@@ -27,6 +30,7 @@ const MainLayout = () => {
 function App() {
   return (
     <Routes>
+
        <Route path="/" element={<Navigate to="/connexion" replace />} />
   
   {/* Route de connexion avec son composant */}

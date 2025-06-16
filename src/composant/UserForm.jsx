@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import './UserForm.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UserForm = ({ user, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    nom: '',
     email: '',
-    motdepase: '',
-    role: 'user',
-    status: 'active'
+    motdepasse: '',
+    role: '',
+    statut: ''
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setFormData(user);
+      setFormData({
+        nom: user.nom || '',
+        email: user.email || '',
+        motdepasse: '',
+        role: user.role || '',
+        statut: user.statut || ''
+      });
     }
   }, [user]);
 
@@ -36,28 +45,73 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) newErrors.name = 'Le nom est obligatoire';
+    if (!formData.nom.trim()) newErrors.nom = 'Le nom est obligatoire';
     if (!formData.email.trim()) {
       newErrors.email = 'L\'email est obligatoire';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Format d\'email invalide';
     }
-    if (!formData.motdepase.trim()) newErrors.motdepase = 'Le mot de passe est obligatoire';
+    if (!user?.id_utilisateur && !formData.motdepasse.trim()) {
+      newErrors.motdepasse = 'Le mot de passe est obligatoire';
+    } else if (formData.motdepasse && formData.motdepasse.length < 6) {
+      newErrors.motdepasse = 'Le mot de passe doit contenir au moins 6 caractères';
+    }
+    if (!formData.role) newErrors.role = 'Le rôle est obligatoire';
+    if (!formData.statut) newErrors.statut = 'Le statut est obligatoire';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) onSubmit(formData);
+    if (!validateForm()) {
+      toast.error('Veuillez corriger les erreurs dans le formulaire');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const dataToSend = { ...formData };
+      
+      if (user?.id_utilisateur && !dataToSend.motdepasse) {
+        delete dataToSend.motdepasse;
+      }
+      
+      const response = await fetch(user?.id_utilisateur 
+        ? `http://localhost:5000/api/ajoutuser/${user.id_utilisateur}` 
+        : 'http://localhost:5000/api/ajoutuser/', {
+        method: user?.id_utilisateur ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend)
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Erreur lors de la requête');
+      }
+      
+      toast.success(user?.id_utilisateur 
+        ? 'Utilisateur mis à jour avec succès' 
+        : 'Utilisateur créé avec succès');
+      
+      onSubmit(result.data);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error(error.message || 'Une erreur est survenue');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="modal-overlayss">
       <div className="modal-contents">
         <div className="modal-headers">
-          <h2>{user?.id ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}</h2>
+          <h2>{user?.id_utilisateur ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}</h2>
           <button className="modal-close" onClick={onCancel}>&times;</button>
         </div>
         
@@ -67,13 +121,13 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
               <label>Nom complet</label>
               <input
                 type="text"
-                name="name"
+                name="nom"
                 placeholder="Jean Dupont"
-                value={formData.name}
+                value={formData.nom}
                 onChange={handleChange}
-                className={errors.name ? 'input-error' : ''}
+                className={errors.nom ? 'input-error' : ''}
               />
-              {errors.name && <span className="error-text">{errors.name}</span>}
+              {errors.nom && <span className="error-text">{errors.nom}</span>}
             </div>
 
             <div className="form-group">
@@ -93,38 +147,62 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
               <label>Mot de passe</label>
               <input
                 type="password"
-                name="motdepase"
-                placeholder="••••••••"
-                value={formData.motdepase}
+                name="motdepasse"
+                placeholder={user?.id_utilisateur ? 'Laisser vide pour ne pas changer' : '••••••••'}
+                value={formData.motdepasse}
                 onChange={handleChange}
-                className={errors.motdepase ? 'input-error' : ''}
+                className={errors.motdepasse ? 'input-error' : ''}
               />
-              {errors.motdepase && <span className="error-text">{errors.motdepase}</span>}
+              {errors.motdepasse && <span className="error-text">{errors.motdepasse}</span>}
             </div>
 
             <div className="form-row">
               <div className="form-group">
                 <label>Rôle</label>
-                <select name="role" value={formData.role} onChange={handleChange}>
-                  <option value="user">Gestionnaire</option>
-                  <option value="admin">Administrateur</option>
+                <select 
+                  name="role" 
+                  value={formData.role} 
+                  onChange={handleChange}
+                  className={errors.role ? 'input-error' : ''}
+                >
+                  <option value="">Sélectionnez un rôle</option>
+                  <option value="Administrateur">Administrateur</option>
+                  <option value="Gestionnaire">Gestionnaire</option>
                 </select>
+                {errors.role && <span className="error-text">{errors.role}</span>}
               </div>
 
               <div className="form-group">
                 <label>Statut</label>
-                <select name="status" value={formData.status} onChange={handleChange}>
-                  <option value="active">Actif</option>
-                  <option value="inactive">Inactif</option>
+                <select 
+                  name="statut" 
+                  value={formData.statut} 
+                  onChange={handleChange}
+                  className={errors.statut ? 'input-error' : ''}
+                >
+                  <option value="">Sélectionnez un statut</option>
+                  <option value="actif">Actif</option>
+                  <option value="inactif">Inactif</option>
+                  <option value="suspendu">Suspendu</option>
                 </select>
+                {errors.statut && <span className="error-text">{errors.statut}</span>}
               </div>
             </div>
 
             <div className="form-actions">
-              <button type="submit" className="btn-submit">
-                {user?.id ? 'Mettre à jour' : 'Créer utilisateur'}
+              <button 
+                type="submit" 
+                className="btn-submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'En cours...' : user?.id_utilisateur ? 'Mettre à jour' : 'Créer utilisateur'}
               </button>
-              <button type="button" className="btn-cancel" onClick={onCancel}>
+              <button 
+                type="button" 
+                className="btn-cancel" 
+                onClick={onCancel}
+                disabled={isSubmitting}
+              >
                 Annuler
               </button>
             </div>

@@ -38,7 +38,7 @@
     margin: 0 auto;
     padding: 20px;
     margin-top: 90px;
-    margin-left: 120px;
+    margin-left: 95px;
     background-color: rgb(248, 246, 246);
     border-radius: 25px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 1);
@@ -53,7 +53,7 @@
     align-items: center;
     margin-bottom: 30px;
     padding: 20px;
-    width: 1000px;
+    width: 1180px;
     border-bottom: 1px solid var(--light-gray);
     margin-left: 3px;
     background-color: white;

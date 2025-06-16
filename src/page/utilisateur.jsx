@@ -1,30 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import UserList from '../composant/UserList';
 import UserForm from '../composant/UserForm';
-import Header from '../composant/Header';
+
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './Utilisateur.css';
 
 const Utilisateur = () => {
   const [users, setUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initialUsers = [
-      { id: 1, name: 'Pierre Dupont', email: 'pierre@example.com', role: 'admin', status: 'active' },
-      { id: 2, name: 'Marie Martin', email: 'marie@example.com', role: 'user', status: 'active' },
-      { id: 3, name: 'Jean Petit', email: 'jean@example.com', role: 'editor', status: 'inactive' },
-      { id: 4, name: 'Sophie Bernard', email: 'sophie@example.com', role: 'user', status: 'active' },
-    ];
-    
-    setUsers(initialUsers);
+    fetchUsers();
   }, []);
 
-  const showNotification = (message, type) => {
-    setNotification({ show: true, message, type });
-    setTimeout(() => {
-      setNotification({ show: false, message: '', type: '' });
-    }, 3000);
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5000/api/ajoutuser/');
+      const data = await response.json();
+      
+      if (response.ok) {
+        setUsers(data.data);
+      } else {
+        throw new Error(data.message || 'Erreur lors de la récupération des utilisateurs');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error(error.message || 'Une erreur est survenue');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAddUser = () => {
@@ -37,67 +45,78 @@ const Utilisateur = () => {
     setShowForm(true);
   };
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = async (userId) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur?")) {
-      setUsers(users.filter(user => user.id !== userId));
-      showNotification("Utilisateur supprimé avec succès", "success");
+      try {
+        const response = await fetch(`http://localhost:5000/api/ajoutuser/${userId}`, {
+          method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          setUsers(users.filter(user => user.id_utilisateur !== userId));
+          toast.success('Utilisateur supprimé avec succès');
+        } else {
+          throw new Error(data.message || 'Erreur lors de la suppression');
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        toast.error(error.message || 'Une erreur est survenue');
+      }
     }
   };
 
   const handleFormSubmit = (userData) => {
     if (currentUser) {
+      // Mise à jour de l'utilisateur
       setUsers(users.map(user => 
-        user.id === currentUser.id ? { ...userData, id: user.id } : user
+        user.id_utilisateur === currentUser.id_utilisateur ? userData : user
       ));
-      showNotification("Utilisateur modifié avec succès", "success");
+      toast.success('Utilisateur mis à jour avec succès');
     } else {
-      const newUser = {
-        ...userData,
-        id: Date.now(),
-      };
-      setUsers([...users, newUser]);
-      showNotification("Utilisateur ajouté avec succès", "success");
+      // Ajout d'un nouvel utilisateur
+      setUsers([userData, ...users]);
+      toast.success('Utilisateur ajouté avec succès');
     }
     setShowForm(false);
   };
 
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setCurrentUser(null);
-  };
-
   return (
-
-    <div className="user-management">
-    <Header title="Gestion des Utilisateurs" />
-      
-      <div className="container">
-        {notification.show && (
-          <div className={`notification ${notification.type}`}>
-            {notification.message}
+    <div className="user-management-container">
+      <div className="user-management-content">
+        
+        <div className="user-management-card">
+          <div className="action-bar">
+            <h2>Liste des Utilisateurs</h2>
+            <button className="btn-primary" onClick={handleAddUser}>
+              Ajouter un utilisateur
+            </button>
           </div>
-        )}
-        
-        <div className="action-bars">
-          <h2>Liste des Utilisateurs:</h2>
-          <button className="btn-primary" onClick={handleAddUser}>
-             Ajouter un utilisateur
-          </button>
+          
+          {isLoading ? (
+            <div className="loading-spinner">
+              <div className="spinner"></div>
+              <p>Chargement en cours...</p>
+            </div>
+          ) : (
+            <>
+              {showForm && (
+                <UserForm 
+                  user={currentUser} 
+                  onSubmit={handleFormSubmit}
+                  onCancel={() => setShowForm(false)}
+                />
+              )}
+              
+              <UserList 
+                users={users} 
+                onEdit={handleEditUser}
+                onDelete={handleDeleteUser}
+              />
+            </>
+          )}
         </div>
-        
-        {showForm && (
-          <UserForm 
-            user={currentUser} 
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
-        )}
-        
-        <UserList 
-          users={users} 
-          onEdit={handleEditUser}
-          onDelete={handleDeleteUser}
-        />
       </div>
     </div>
   );
