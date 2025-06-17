@@ -73,7 +73,6 @@ const Sidebar = () => {
   }, []);
 
   const navItems = [
-    { name: 'Gestion des utilisateurs', icon: DashboardIcon, path: '/utilisateur' },
     { name: 'Gestion des clients', icon: UserCogIcon, path: '/Gestionclient' },
     { name: 'Réservations', icon: CalendarCheckIcon, path: '/gestionreservation' },
     { name: 'Gestion des demonstrations', icon: WalletIcon, path: '/Gestiondemonstration' },

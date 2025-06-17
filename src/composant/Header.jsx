@@ -52,7 +52,7 @@ const Header = () => {
             ☰
           </button>
           <h1 className="app-header-heading">
-            Foot Admin suite - {userInfo.name || "Invité"} ({userInfo.role || "Non connecté"})
+            FootSpace Admin suite - {userInfo.name || "Invité"} "{userInfo.role || "Non connecté"}"
           </h1>
         </div>
 
@@ -73,16 +73,7 @@ const Header = () => {
             </button>
           </div>
 
-          <div className="app-header-user">
-            <img
-              src="https://randomuser.me/api/portraits/men/32.jpg"
-              alt="Utilisateur"
-              className="app-header-user-avatar"
-            />
-            <div className="app-header-user-info">
-              <span className="app-header-user-name">{userInfo.name || 'Utilisateur'}</span>
-            </div>
-          </div>
+         
         </div>
       </div>
     </header>

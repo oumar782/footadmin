@@ -7,7 +7,7 @@ const WelcomeSection = () => {
         <div style={styles.textContent}>
           <h1 style={styles.title}>Bienvenue sur  <span style={styles.highlightedText}>"FootSpace admin suite"</span> </h1>
           <p style={styles.subtitle}>
-            Découvrez une expérience unique conçue spécialement pour vous en tant que <span style={styles.highlightedText}>"Gestionnaire"</span>
+            Découvrez une expérience unique conçue spécialement pour vous en tant qu' <span style={styles.highlightedText}>"Administrateur"</span>
           </p>
          
         </div>
