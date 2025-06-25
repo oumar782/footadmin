@@ -15,6 +15,68 @@ const Toast = ({ message, type, onClose }) => {
     );
 };
 
+const StatsCards = () => {
+    const [stats, setStats] = useState({
+        total: 0,
+        enAttente: 0,
+        confirme: 0,
+        realise: 0,
+        annule: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get('http://localhost:5000/api/demonstrations/statsde');
+                setStats(response.data.data);
+            } catch (error) {
+                console.error("Erreur lors du chargement des statistiques:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="stats-container">
+                <div className="stats-card loading">
+                    <p>Chargement des statistiques...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="stats-container">
+            <div className="stats-card total">
+                <h3>Total</h3>
+                <p>{stats.total}</p>
+            </div>
+            <div className="stats-card status-en-attente">
+                <h3>En attente</h3>
+                <p>{stats.enAttente}</p>
+            </div>
+            <div className="stats-card status-confirmé">
+                <h3>Confirmé</h3>
+                <p>{stats.confirme}</p>
+            </div>
+            <div className="stats-card status-réalisé">
+                <h3>Réalisé</h3>
+                <p>{stats.realise}</p>
+            </div>
+            <div className="stats-card status-annulé">
+                <h3>Annulé</h3>
+                <p>{stats.annule}</p>
+            </div>
+        </div>
+    );
+};
+
 const ClientModal = ({ client, onClose, isOpen }) => {
     const [modalState, setModalState] = useState('exited');
 
@@ -64,24 +126,24 @@ const ClientModal = ({ client, onClose, isOpen }) => {
                             <div className="detail-item">
                                 <span className="detail-label">Statut:</span>
                                 <span className={`status-badge status-${client?.statut?.toLowerCase().replace(' ', '-')}`}>
-                                    {client?.statut || 'En attente'}
+                                    {client?.statut || 'N/A'}
                                 </span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-label">Nom:</span>
-                                <span className="detail-value">{client?.nom}</span>
+                                <span className="detail-value">{client?.nom || 'N/A'}</span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-label">Email:</span>
-                                <span className="detail-value">{client?.email}</span>
+                                <span className="detail-value">{client?.email || 'N/A'}</span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-label">Entreprise:</span>
-                                <span className="detail-value">{client?.entreprise || 'Non spécifié'}</span>
+                                <span className="detail-value">{client?.entreprise || 'N/A'}</span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-label">Terrains:</span>
-                                <span className="detail-value">{client?.nombreterrains}</span>
+                                <span className="detail-value">{client?.nombreterrains || 'N/A'}</span>
                             </div>
                         </div>
                         <div className="message-section">
@@ -114,7 +176,7 @@ const ClientForm = ({ clientToEdit, onSubmit, onCancel }) => {
         entreprise: '',
         nombreterrains: '',
         message: '',
-        statut: 'En attente'
+        statut: ''
     });
 
     useEffect(() => {
@@ -125,10 +187,17 @@ const ClientForm = ({ clientToEdit, onSubmit, onCancel }) => {
                 entreprise: clientToEdit.entreprise || '',
                 nombreterrains: clientToEdit.nombreterrains || '',
                 message: clientToEdit.message || '',
-                statut: clientToEdit.statut || 'En attente'
+                statut: clientToEdit.statut || ''
             });
         } else {
-            setFormData(prev => ({ ...prev, statut: 'En attente' }));
+            setFormData({
+                nom: '',
+                email: '',
+                entreprise: '',
+                nombreterrains: '',
+                message: '',
+                statut: ''
+            });
         }
     }, [clientToEdit]);
 
@@ -139,6 +208,10 @@ const ClientForm = ({ clientToEdit, onSubmit, onCancel }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!formData.nom || !formData.email || !formData.nombreterrains || !formData.statut) {
+            alert('Veuillez remplir tous les champs obligatoires');
+            return;
+        }
         onSubmit(formData);
     };
 
@@ -176,7 +249,7 @@ const ClientForm = ({ clientToEdit, onSubmit, onCancel }) => {
                         </>
                     )}
                     <div className="form-group">
-                        <label htmlFor="nom" className="form-label">Nom</label>
+                        <label htmlFor="nom" className="form-label">Nom*</label>
                         <input
                             type="text"
                             id="nom"
@@ -189,7 +262,7 @@ const ClientForm = ({ clientToEdit, onSubmit, onCancel }) => {
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="email" className="form-label">Email</label>
+                        <label htmlFor="email" className="form-label">Email*</label>
                         <input
                             type="email"
                             id="email"
@@ -214,7 +287,7 @@ const ClientForm = ({ clientToEdit, onSubmit, onCancel }) => {
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="nombreterrains" className="form-label">Nombre de terrains</label>
+                        <label htmlFor="nombreterrains" className="form-label">Nombre de terrains*</label>
                         <input
                             type="number"
                             id="nombreterrains"
@@ -228,7 +301,7 @@ const ClientForm = ({ clientToEdit, onSubmit, onCancel }) => {
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="statut" className="form-label">Statut</label>
+                        <label htmlFor="statut" className="form-label">Statut*</label>
                         <select
                             id="statut"
                             name="statut"
@@ -237,6 +310,7 @@ const ClientForm = ({ clientToEdit, onSubmit, onCancel }) => {
                             className="form-input"
                             required
                         >
+                            <option value="">Sélectionnez un statut</option>
                             <option value="En attente">En attente</option>
                             <option value="Confirmé">Confirmé</option>
                             <option value="Réalisé">Réalisé</option>
@@ -361,7 +435,7 @@ const ClientsList = ({ clients = [], onEdit, onDelete, onView, isLoading }) => {
                                     </td>
                                     <td>
                                         <span className={`status-badge status-${client.statut?.toLowerCase().replace(' ', '-')}`}>
-                                            {client.statut || 'En attente'}
+                                            {client.statut}
                                         </span>
                                     </td>
                                     <td className="actions-cell">
@@ -422,13 +496,7 @@ const Demonstration = () => {
         setIsLoading(true);
         try {
             const response = await axios.get('http://localhost:5000/api/demonstrations/');
-            const data = response.data.data || [];
-            // Correction ici : garantir un statut valide si absent
-            const updatedData = data.map(item => ({
-                ...item,
-                statut: item.statut || 'En attente'
-            }));
-            setDemonstrations(updatedData);
+            setDemonstrations(response.data.data || []);
             setError(null);
         } catch (err) {
             console.error('Erreur:', err);
@@ -537,6 +605,9 @@ const Demonstration = () => {
                         </button>
                     )}
                 </div>
+
+                {!showForm && <StatsCards />}
+
                 {error && (
                     <div className="error-alert">
                         <p>{error}</p>

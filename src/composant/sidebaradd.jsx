@@ -12,13 +12,13 @@ import {
 import "./side.css";
 
 const menuItems = [
-  { title: "Gestion des utilisateurs", url: "/utilisateur", icon: BarChart3 },
-
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+
+  { title: "Gestion des utilisateurs", url: "/utilisateur", icon: BarChart3 },
   { title: " suivi des Clients", url: "/suiviclient", icon: Users },
-  { title: " Suivi des Réservations", url: "/reservations", icon: Calendar },
-  { title: " Suivi des Partenariats", url: "/partenariats", icon: Handshake },
-  { title: "Suivi des  Démonstrations", url: "/demonstrations", icon: Target },
+  { title: " Suivi des Réservations", url: "/suivireservation", icon: Calendar },
+  { title: " Suivi des Partenariats", url: "/suivipartenariats", icon: Handshake },
+  { title: "Suivi des  Démonstrations", url: "/suividemonstration", icon: Target },
 ];
 
 const AppSidebar = () => {

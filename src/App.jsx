@@ -20,6 +20,10 @@ import Sideadmin from './composant/sidebaradd';
 import Administrateur from './page/Administrateur';
 import Dashboard from './page/Dashboard';
 import Suiviclient from './page/suiviclient';
+import Suivireservation from './page/SuiviReservation';
+import Suivipartenariat from './page/Suivipartenariats';
+import Suividemonstration from './page/Suividemonstration';
+
 
 
 
@@ -77,6 +81,9 @@ function App() {
              <Route path="/utilisateur" element={<User />} />
              <Route path="/dashboard" element={<Dashboard />} />
              <Route path="/suiviclient" element={<Suiviclient />} />
+             <Route path="/suivireservation" element={<Suivireservation />} />
+             <Route path="/suivipartenariats" element={<Suivipartenariat />} />
+             <Route path="/suividemonstration" element={<Suividemonstration />} />
 
 
           </Route>

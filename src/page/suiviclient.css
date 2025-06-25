@@ -11,7 +11,7 @@ body {
   width: 1200px;
   margin: 20 auto;
   padding: 20px;
-  margin-left: 90px;
+  margin-left: 120px;
   margin-top: 70px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 1.5);
   border-radius: 10px;
@@ -58,8 +58,8 @@ body {
 }
 
 .stat-inactive {
-  background-color: #ef4444;
-  background: linear-gradient(135deg, #ef4444, #f87171);
+  background-color: #750505;
+  background: linear-gradient(135deg, #590202, #690202);
 }
 
 .stat-card h3 {
