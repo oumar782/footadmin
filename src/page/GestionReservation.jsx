@@ -7,7 +7,7 @@ import {
   Layers, DollarSign, Search, Filter, BadgeCheck, BadgePercent,
   Settings, CreditCard, ArrowRight, Circle, Check
 } from 'lucide-react';
-import './suivireservation.css';
+import './Gestionreservation.css';
 
 const GestionReservation = () => {
   // États

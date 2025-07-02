@@ -5,7 +5,7 @@ import {
   Printer, CheckCircle, XCircle, Plus, X, ChevronDown, ChevronUp, 
   Edit, Trash2, Eye, Calendar, User, Briefcase, Mail, Tag, 
   Layers, DollarSign, Search, Filter, BadgeCheck, BadgePercent,
-  Settings, CreditCard, ArrowRight, Circle, Check
+  Settings, CreditCard, ArrowRight, Circle, Check, BarChart2, PieChart, Activity
 } from 'lucide-react';
 import './suivireservation.css';
 
@@ -36,6 +36,7 @@ const GestionReservation = () => {
   const [currentCustomization, setCurrentCustomization] = useState('');
   const [showCustomizationsDropdown, setShowCustomizationsDropdown] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Options
   const featuresOptions = [
@@ -59,33 +60,88 @@ const GestionReservation = () => {
     Enterprise: { prix: 349, features: ['Terrains illimités', 'Réservations en ligne', 'Paiements intégrés', 'Tableau de bord premium', 'Statistiques avancées', 'Application mobile personnalisée', 'Personnalisation complète', 'API dédiée', 'Support 24/7', 'Gestionnaire de compte dédié'] }
   };
 
-  // Charger les réservations depuis l'API
-  useEffect(() => {
-    const fetchReservations = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/reservation');
-        const data = await response.json();
-        if (data.success) {
-          setReservations(data.data.map(res => ({
-            ...res,
-            type_perso: formatArrayData(res.type_perso),
-            fonctionnalite: formatArrayData(res.fonctionnalite)
-          })));
-          setFilteredReservations(data.data.map(res => ({
-            ...res,
-            type_perso: formatArrayData(res.type_perso),
-            fonctionnalite: formatArrayData(res.fonctionnalite)
-          })));
-          toast.success('Réservations chargées avec succès');
-        } else {
-          toast.error('Erreur lors du chargement des réservations');
-        }
-      } catch (err) {
-        console.error('Erreur lors du chargement:', err);
-        toast.error('Erreur lors du chargement des réservations');
-      }
+  // Statistiques
+  const [stats, setStats] = useState({
+    totalReservations: 0,
+    totalCA: 0,
+    starterCount: 0,
+    proCount: 0,
+    enterpriseCount: 0,
+    signedCount: 0,
+    lostCount: 0,
+    pendingCount: 0,
+    caSigned: 0,
+    caLost: 0,
+    caPending: 0
+  });
+
+  // Calcul des statistiques
+  const calculateStats = (data) => {
+    const stats = {
+      totalReservations: data.length,
+      totalCA: 0,
+      starterCount: 0,
+      proCount: 0,
+      enterpriseCount: 0,
+      signedCount: 0,
+      lostCount: 0,
+      pendingCount: 0,
+      caSigned: 0,
+      caLost: 0,
+      caPending: 0
     };
 
+    data.forEach(res => {
+      const total = (parseFloat(res.prix) || 0) + (parseFloat(res.prix_perso) || 0);
+      stats.totalCA += total;
+
+      if (res.formule === 'Starter') stats.starterCount++;
+      if (res.formule === 'Pro') stats.proCount++;
+      if (res.formule === 'Enterprise') stats.enterpriseCount++;
+
+      if (res.statut === 'signé') {
+        stats.signedCount++;
+        stats.caSigned += total;
+      } else if (res.statut === 'perdu') {
+        stats.lostCount++;
+        stats.caLost += total;
+      } else {
+        stats.pendingCount++;
+        stats.caPending += total;
+      }
+    });
+
+    return stats;
+  };
+
+  // Charger les réservations depuis l'API
+  const fetchReservations = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/reservations/');
+      const data = await response.json();
+      if (data.success) {
+        const formattedData = data.data.map(res => ({
+          ...res,
+          type_perso: formatArrayData(res.type_perso),
+          fonctionnalite: formatArrayData(res.fonctionnalite)
+        }));
+        setReservations(formattedData);
+        setFilteredReservations(formattedData);
+        setStats(calculateStats(formattedData));
+        toast.success('Réservations chargées avec succès');
+      } else {
+        toast.error('Erreur lors du chargement des réservations');
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement:', err);
+      toast.error('Erreur lors du chargement des réservations');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchReservations();
   }, []);
 
@@ -123,6 +179,7 @@ const GestionReservation = () => {
       );
     }
     setFilteredReservations(results);
+    setStats(calculateStats(results));
   }, [searchTerm, filter, reservations]);
 
   // Mettre à jour le prix quand la formule change
@@ -144,22 +201,30 @@ const GestionReservation = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/reservation', {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5000/api/reservations/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({
           ...newReservation,
           type_perso: newReservation.type_perso,
           fonctionnalite: newReservation.fonctionnalite
         })
       });
+      
       const data = await response.json();
+      
       if (data.success) {
-        setReservations([...reservations, {
+        const newRes = {
           ...data.data,
           type_perso: formatArrayData(data.data.type_perso),
           fonctionnalite: formatArrayData(data.data.fonctionnalite)
-        }]);
+        };
+        setReservations([...reservations, newRes]);
+        setStats(calculateStats([...reservations, newRes]));
         resetForm();
         setShowModal(false);
         toast.success('Réservation ajoutée avec succès');
@@ -169,6 +234,8 @@ const GestionReservation = () => {
     } catch (err) {
       console.error('Erreur lors de l\'ajout:', err);
       toast.error('Erreur lors de l\'ajout de la réservation');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -180,12 +247,14 @@ const GestionReservation = () => {
         return;
       }
 
+      setIsLoading(true);
       const response = await fetch(
-        `http://localhost:5000/api/reservation/${currentReservation.id_reservation}`,
+        `http://localhost:5000/api/reservations/${currentReservation.id_reservation}`,
         {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
           body: JSON.stringify({
             formule: currentReservation.formule,
@@ -205,13 +274,15 @@ const GestionReservation = () => {
       const data = await response.json();
       
       if (data.success) {
-        setReservations(reservations.map(res => 
+        const updatedReservations = reservations.map(res => 
           res.id_reservation === currentReservation.id_reservation ? {
             ...data.data,
             type_perso: formatArrayData(data.data.type_perso),
             fonctionnalite: formatArrayData(data.data.fonctionnalite)
           } : res
-        ));
+        );
+        setReservations(updatedReservations);
+        setStats(calculateStats(updatedReservations));
         setShowViewModal(false);
         setIsEditing(false);
         toast.success('Réservation mise à jour avec succès');
@@ -221,6 +292,8 @@ const GestionReservation = () => {
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
       toast.error('Erreur lors de la mise à jour de la réservation');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -229,13 +302,19 @@ const GestionReservation = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/reservation/${id}`, {
-        method: 'DELETE'
+      setIsLoading(true);
+      const response = await fetch(`http://localhost:5000/api/reservations/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
       const data = await response.json();
 
       if (data.success) {
-        setReservations(reservations.filter((r) => r.id_reservation !== id));
+        const updatedReservations = reservations.filter((r) => r.id_reservation !== id);
+        setReservations(updatedReservations);
+        setStats(calculateStats(updatedReservations));
         toast.success('Réservation supprimée avec succès');
       } else {
         toast.error(data.message || 'Erreur lors de la suppression');
@@ -243,6 +322,8 @@ const GestionReservation = () => {
     } catch (err) {
       console.error('Erreur lors de la suppression:', err);
       toast.error('Erreur lors de la suppression de la réservation');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -282,16 +363,16 @@ const GestionReservation = () => {
 
   // Classes CSS pour les badges
   const getBadgeClass = (formule) => {
-    if (!formule) return 'badge-basique';
+    if (!formule) return 'res-badge-basic';
     switch (formule.toLowerCase()) {
       case 'starter':
-        return 'badge-premium';
+        return 'res-badge-starter';
       case 'pro':
-        return 'badge-standard';
+        return 'res-badge-pro';
       case 'enterprise':
-        return 'badge-standard';
+        return 'res-badge-enterprise';
       default:
-        return 'badge-basique';
+        return 'res-badge-basic';
     }
   };
 
@@ -299,13 +380,13 @@ const GestionReservation = () => {
   const getStatutClass = (statut) => {
     switch (statut) {
       case 'signé':
-        return 'statut-signe';
+        return 'res-status-signed';
       case 'perdu':
-        return 'statut-perdu';
+        return 'res-status-lost';
       case 'en_attente':
-        return 'statut-attente';
+        return 'res-status-pending';
       default:
-        return 'statut-attente';
+        return 'res-status-pending';
     }
   };
 
@@ -366,14 +447,14 @@ const GestionReservation = () => {
             .invoice-title { 
               font-size: 28px; 
               font-weight: 700; 
-              color:rgb(38, 110, 16); 
+              color: #3a0ca3; 
               margin: 0;
             }
             
             .invoice-logo { 
               font-size: 24px; 
               font-weight: 700; 
-              color:rgb(18, 66, 3);
+              color: #4361ee;
               display: flex;
               align-items: center;
             }
@@ -383,7 +464,7 @@ const GestionReservation = () => {
               display: inline-block;
               width: 30px;
               height: 30px;
-              background-color:rgb(26, 79, 4);
+              background-color: #4361ee;
               border-radius: 50%;
               margin-right: 10px;
             }
@@ -397,15 +478,15 @@ const GestionReservation = () => {
             
             .invoice-section { 
               flex: 1;
-              background:rgb(25, 88, 10);
+              background: #f8f9fa;
               padding: 20px;
               border-radius: 8px;
             }
             
             .invoice-section h3 { 
-              border-bottom: 2px solidrgb(9, 83, 14); 
+              border-bottom: 2px solid #e9ecef; 
               padding-bottom: 10px; 
-              color:rgb(24, 76, 7);
+              color: #3a0ca3;
               font-size: 18px;
               font-weight: bold;
               margin-top: 0;
@@ -422,9 +503,9 @@ const GestionReservation = () => {
             
             .invoice-features h3, 
             .invoice-personnalisation h3 { 
-              border-bottom: 2px solidrgb(18, 65, 4); 
+              border-bottom: 2px solid #e9ecef; 
               padding-bottom: 10px; 
-              color:rgb(6, 82, 12);
+              color: #3a0ca3;
               font-size: 18px;
               font-weight: 600;
               margin-top: 0;
@@ -435,7 +516,7 @@ const GestionReservation = () => {
               list-style-type: none; 
               padding-left: 0;
               margin: 0;
-              color:rgb(63, 11, 11);
+              color: #495057;
             }
             
             li { 
@@ -443,7 +524,7 @@ const GestionReservation = () => {
               border-bottom: 1px solid #eee;
               display: flex;
               align-items: center;
-              color:rgb(8, 4, 4);
+              color: #212529;
             }
             
             li:last-child {
@@ -452,7 +533,7 @@ const GestionReservation = () => {
             
             li:before {
               content: "•";
-              color:rgb(6, 83, 28);
+              color: #4361ee;
               font-weight: bold;
               display: inline-block;
               width: 1em;
@@ -460,7 +541,7 @@ const GestionReservation = () => {
             }
             
             .invoice-total { 
-              background: linear-gradient(135deg,rgb(4, 70, 4), #2c3e50);
+              background: linear-gradient(135deg, #4361ee, #3a0ca3);
               padding: 25px;
               border-radius: 8px;
               color: white;
@@ -468,7 +549,7 @@ const GestionReservation = () => {
             }
             
             .invoice-total h3 {
-              color: green;
+              color: white;
               margin-top: 0;
               font-size: 20px;
               border-bottom: 2px solid rgba(255,255,255,0.2);
@@ -487,49 +568,48 @@ const GestionReservation = () => {
             .invoice-footer { 
               margin-top: 40px; 
               text-align: center; 
-              color:rgb(9, 156, 46); 
+              color: #6c757d; 
               font-size: 14px;
               padding-top: 20px;
               border-top: 1px solid #eee;
             }
             
-            .badge { 
+            .res-badge { 
               padding: 5px 12px; 
               border-radius: 20px; 
               font-size: 12px; 
               font-weight: 600;
               display: inline-block;
               margin-left: 10px;
-              background: linear-gradient(135deg,rgb(12, 116, 7),rgb(166, 182, 22));
             }
             
-            .badge-premium { 
-              background: linear-gradient(135deg,rgb(12, 116, 7),rgb(166, 182, 22));
+            .res-badge-starter { 
+              background: linear-gradient(135deg, #4895ef, #4361ee);
               color: white; 
             }
             
-            .badge-standard { 
-              background: linear-gradient(135deg,rgb(52, 219, 69),rgb(41, 53, 185));
+            .res-badge-pro { 
+              background: linear-gradient(135deg, #3f37c9, #3a0ca3);
               color: white; 
             }
             
-            .badge-basique { 
-              background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            .res-badge-enterprise { 
+              background: linear-gradient(135deg, #7209b7, #560bad);
               color: white; 
             }
             
-            .statut-signe {
-              background-color: #10b981;
+            .res-status-signed {
+              background-color: #4cc9f0;
               color: white;
             }
             
-            .statut-perdu {
-              background-color: #ef4444;
+            .res-status-lost {
+              background-color: #ef233c;
               color: white;
             }
             
-            .statut-attente {
-              background-color: #f59e0b;
+            .res-status-pending {
+              background-color: #f8961e;
               color: white;
             }
             
@@ -537,28 +617,28 @@ const GestionReservation = () => {
               display: flex;
               justify-content: space-between;
               margin-bottom: 10px;
-              color:rgb(193, 10, 10);
+              color: white;
             }
             
             .price-label {
               font-weight: bold;
-              color:rgb(6, 23, 4);
+              color: rgba(255,255,255,0.9);
             }
             
             .price-value {
               font-weight: 600;
-              color:rgb(222, 12, 12);
+              color: white;
             }
             
             .invoice-number {
               font-size: 14px;
-              color:rgb(222, 12, 12);
+              color: #6c757d;
               margin-top: 5px;
             }
             
             .invoice-date {
               font-size: 14px;
-              color:rgb(124, 5, 17);
+              color: #6c757d;
               margin-top: 5px;
             }
           </style>
@@ -621,7 +701,7 @@ const GestionReservation = () => {
 
   const handleCustomizationSelect = (type) => {
     if (!newReservation.type_perso.includes(type)) {
-      setNewReservation((prev) => ({
+      setNewReservation(prev => ({
         ...prev,
         type_perso: [...prev.type_perso, type]
       }));
@@ -634,65 +714,133 @@ const GestionReservation = () => {
     setIsEditing(true);
   };
 
+  // Formatage monétaire
+  const formatMoney = (amount) => {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+  };
+
   return (
-    <div className="containergr">
+    <div className="res-container">
       {/* En-tête */}
-      <header className="app-headergre">
-        <div className="app-titlegr">
-          <div className="app-icongr">
+      <header className="res-header">
+        <div className="res-title">
+          <div className="res-icon">
             <Layers size={24} className="text-blue-500" />
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Gestion des Réservations</h1>
         </div>
         <button 
-          className="btnre btn-primary flex items-center" 
+          className="res-btn res-btn-primary flex items-center" 
           onClick={() => {
             resetForm();
             setShowModal(true);
           }}
+          disabled={isLoading}
         >
-          <Plus size={16} className="mr-2" />
-          Nouvelle Réservation
+          {isLoading ? (
+            <span className="res-spinner"></span>
+          ) : (
+            <>
+              <Plus size={16} className="mr-2" />
+              Nouvelle Réservation
+            </>
+          )}
         </button>
       </header>
 
+      {/* Tableau de bord statistiques */}
+      <div className="res-dashboard">
+        <div className="res-stat-card res-stat-total">
+          <div className="res-stat-icon">
+            <Activity size={24} />
+          </div>
+          <div className="res-stat-info">
+            <h3>Total Réservations</h3>
+            <p>{stats.totalReservations}</p>
+          </div>
+        </div>
+        
+        <div className="res-stat-card res-stat-ca">
+          <div className="res-stat-icon">
+            <DollarSign size={24} />
+          </div>
+          <div className="res-stat-info">
+            <h3>Chiffre d'Affaires</h3>
+            <p>{formatMoney(stats.totalCA)}</p>
+          </div>
+        </div>
+        
+        <div className="res-stat-card res-stat-formules">
+          <div className="res-stat-icon">
+            <BarChart2 size={24} />
+          </div>
+          <div className="res-stat-info">
+            <h3>Répartition Formules</h3>
+            <div className="res-stat-details">
+              <span className="res-stat-badge res-starter">Starter: {stats.starterCount}</span>
+              <span className="res-stat-badge res-pro">Pro: {stats.proCount}</span>
+              <span className="res-stat-badge res-enterprise">Enterprise: {stats.enterpriseCount}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="res-stat-card res-stat-status">
+          <div className="res-stat-icon">
+            <PieChart size={24} />
+          </div>
+          <div className="res-stat-info">
+            <h3>Statut des Réservations</h3>
+            <div className="res-stat-details">
+              <span className="res-stat-badge res-signed">Signé: {stats.signedCount}</span>
+              <span className="res-stat-badge res-lost">Perdu: {stats.lostCount}</span>
+              <span className="res-stat-badge res-pending">En attente: {stats.pendingCount}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Barre de recherche et filtres */}
-      <div className="search-filter-container bg-white p-4 rounded-lg shadow-sm mb-6">
-        <div className="search-box relative">
+      <div className="res-search-filter">
+        <div className="res-search-box">
           <input
             type="text"
             placeholder="Rechercher des réservations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="res-search-input"
+            disabled={isLoading}
           />
-          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+          <Search size={16} className="res-search-icon" />
         </div>
-        <div className="filter-buttons flex flex-wrap gap-2 mt-4">
+        <div className="res-filter-buttons">
           <button
-            className={`btnre btn-outline ${filter === 'all' ? 'active bg-blue-500 text-white' : ''} flex items-center`}
+            className={`res-filter-btn ${filter === 'all' ? 'active' : ''}`}
             onClick={() => setFilter('all')}
+            disabled={isLoading}
           >
             <Filter size={14} className="mr-1" />
             Toutes
           </button>
           <button
-            className={`btnre btn-outline ${filter === 'starter' ? 'active bg-purple-600 text-white' : ''} flex items-center`}
+            className={`res-filter-btn ${filter === 'starter' ? 'active' : ''}`}
             onClick={() => setFilter('starter')}
+            disabled={isLoading}
           >
             <BadgeCheck size={14} className="mr-1" />
             Starter
           </button>
           <button
-            className={`btnre btn-outline ${filter === 'pro' ? 'active bg-blue-600 text-white' : ''} flex items-center`}
+            className={`res-filter-btn ${filter === 'pro' ? 'active' : ''}`}
             onClick={() => setFilter('pro')}
+            disabled={isLoading}
           >
             <BadgePercent size={14} className="mr-1" />
             Pro
           </button>
           <button
-            className={`btnre btn-outline ${filter === 'enterprise' ? 'active bg-gray-600 text-white' : ''} flex items-center`}
+            className={`res-filter-btn ${filter === 'enterprise' ? 'active' : ''}`}
             onClick={() => setFilter('enterprise')}
+            disabled={isLoading}
           >
             <Settings size={14} className="mr-1" />
             Enterprise
@@ -701,115 +849,116 @@ const GestionReservation = () => {
       </div>
 
       {/* Tableau des réservations */}
-      <div className="reservations-container bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="reservations-header p-4 border-b border-gray-200 flex justify-between items-center">
-          <div className="reservations-count text-gray-600">
+      <div className="res-table-container">
+        <div className="res-table-header">
+          <div className="res-count">
             {filteredReservations.length}{' '}
             {filteredReservations.length === 1 ? 'réservation trouvée' : 'réservations trouvées'}
           </div>
         </div>
-        {filteredReservations.length > 0 ? (
-          <div className="table-responsive overflow-x-auto">
-            <table className="reservations-table w-full">
-              <thead className="bg-gray-50">
+        {isLoading ? (
+          <div className="res-loading">
+            <div className="res-spinner"></div>
+            <p>Chargement des réservations...</p>
+          </div>
+        ) : filteredReservations.length > 0 ? (
+          <div className="res-table-responsive">
+            <table className="res-table">
+              <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Formule</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perso.</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entreprise</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Personnalisation</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fonctionnalités</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th>Formule</th>
+                  <th>Prix</th>
+                  <th>Perso.</th>
+                  <th>Client</th>
+                  <th>Entreprise</th>
+                  <th>Email</th>
+                  <th>Personnalisation</th>
+                  <th>Fonctionnalités</th>
+                  <th>Total</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {filteredReservations.map((reservation) => (
-                  <tr key={reservation.id_reservation} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`badge ${getBadgeClass(reservation.formule)} inline-flex items-center`}>
+                  <tr key={reservation.id_reservation}>
+                    <td>
+                      <span className={`res-badge ${getBadgeClass(reservation.formule)}`}>
                         {reservation.formule === 'Starter' && <BadgeCheck size={14} className="mr-1" />}
                         {reservation.formule === 'Pro' && <BadgePercent size={14} className="mr-1" />}
                         {reservation.formule === 'Enterprise' && <Settings size={14} className="mr-1" />}
                         {reservation.formule || 'Non spécifié'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {reservation.prix || '0'} €
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {reservation.prix_perso || '0'} €
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <User size={16} className="text-gray-400 mr-2" />
+                    <td>{formatMoney(reservation.prix || 0)}</td>
+                    <td>{formatMoney(reservation.prix_perso || 0)}</td>
+                    <td>
+                      <div className="res-client-info">
+                        <User size={16} className="res-icon-small" />
                         <span>{reservation.nom_complet || '-'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <Briefcase size={16} className="text-gray-400 mr-2" />
+                    <td>
+                      <div className="res-client-info">
+                        <Briefcase size={16} className="res-icon-small" />
                         <span>{reservation.entreprise || '-'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <a href={`mailto:${reservation.email}`} className="email-link flex items-center">
-                        <Mail size={16} className="text-gray-400 mr-2" />
+                    <td>
+                      <a href={`mailto:${reservation.email}`} className="res-email">
+                        <Mail size={16} className="res-icon-small" />
                         {reservation.email || '-'}
                       </a>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="tags-container flex flex-wrap gap-1">
+                    <td>
+                      <div className="res-tags">
                         {reservation.type_perso && reservation.type_perso.length > 0 ? (
                           reservation.type_perso.map((type, index) => (
-                            <span key={index} className="tag bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
-                              <Circle size={8} className="mr-1 text-blue-500" />
+                            <span key={index} className="res-tag">
+                              <Circle size={8} className="mr-1" />
                               {type}
                             </span>
                           ))
                         ) : (
-                          <span className="no-data text-gray-400">-</span>
+                          <span className="res-no-data">-</span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="tags-container flex flex-wrap gap-1">
+                    <td>
+                      <div className="res-tags">
                         {reservation.fonctionnalite && reservation.fonctionnalite.length > 0 ? (
                           reservation.fonctionnalite.map((feature, index) => (
-                            <span key={index} className="tag bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
-                              <Check size={8} className="mr-1 text-green-500" />
+                            <span key={index} className="res-tag res-feature-tag">
+                              <Check size={8} className="mr-1" />
                               {feature}
                             </span>
                           ))
                         ) : (
-                          <span className="no-data text-gray-400">-</span>
+                          <span className="res-no-data">-</span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                      {calculateTotal(reservation)} €
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`statut ${getStatutClass(reservation.statut)} px-2 py-1 rounded-full text-xs`}>
+                    <td className="res-total">{formatMoney(calculateTotal(reservation))}</td>
+                    <td>
+                      <span className={`res-status ${getStatutClass(reservation.statut)}`}>
                         {reservation.statut || 'en_attente'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="action-buttons flex space-x-2">
+                    <td>
+                      <div className="res-actions">
                         <button
-                          className="btn btn-view text-blue-600 hover:text-blue-900"
+                          className="res-action-btn res-view"
                           onClick={() => viewReservation(reservation)}
                           title="Voir les détails"
+                          disabled={isLoading}
                         >
                           <Eye size={16} />
                         </button>
                         <button
-                          className="btn btn-delete text-red-600 hover:text-red-900"
+                          className="res-action-btn res-delete"
                           onClick={() => handleDeleteReservation(reservation.id_reservation)}
                           title="Supprimer"
+                          disabled={isLoading}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -821,18 +970,19 @@ const GestionReservation = () => {
             </table>
           </div>
         ) : (
-          <div className="empty-state p-8 text-center">
-            <div className="empty-state-icon mx-auto mb-4 text-gray-400">
+          <div className="res-empty-state">
+            <div className="res-empty-icon">
               <Layers size={48} strokeWidth={1.5} />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune réservation trouvée</h3>
-            <p className="text-gray-500 mb-6">Essayez de modifier vos critères de recherche ou ajoutez une nouvelle réservation</p>
+            <h3>Aucune réservation trouvée</h3>
+            <p>Essayez de modifier vos critères de recherche ou ajoutez une nouvelle réservation</p>
             <button 
-              className="btn btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="res-btn res-btn-primary"
               onClick={() => {
                 resetForm();
                 setShowModal(true);
               }}
+              disabled={isLoading}
             >
               <Plus size={16} className="mr-2" />
               Ajouter une réservation
@@ -843,25 +993,26 @@ const GestionReservation = () => {
 
       {/* Modal d'ajout */}
       {showModal && (
-        <div className="modal-overlay active fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="modal bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto">
-            <div className="modal-header flex justify-between items-center p-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                <Plus size={20} className="mr-2 text-blue-500" />
+        <div className="res-modal-overlay">
+          <div className="res-modal">
+            <div className="res-modal-header">
+              <h2>
+                <Plus size={20} className="mr-2" />
                 Nouvelle Réservation
               </h2>
               <button 
-                className="close-btn text-gray-400 hover:text-gray-500"
+                className="res-close-btn"
                 onClick={() => setShowModal(false)}
+                disabled={isLoading}
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="modal-body p-6">
-              <div className="form-grid grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Tag size={16} className="mr-2 text-blue-500" />
+            <div className="res-modal-body">
+              <div className="res-form-grid">
+                <div className="res-form-group">
+                  <label>
+                    <Tag size={16} className="mr-2" />
                     Formule *
                   </label>
                   <select
@@ -869,7 +1020,8 @@ const GestionReservation = () => {
                     value={newReservation.formule}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                    className="res-form-control"
+                    disabled={isLoading}
                   >
                     <option value="">Sélectionnez une formule</option>
                     <option value="Starter">Starter</option>
@@ -877,9 +1029,9 @@ const GestionReservation = () => {
                     <option value="Enterprise">Enterprise</option>
                   </select>
                 </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <DollarSign size={16} className="mr-2 text-blue-500" />
+                <div className="res-form-group">
+                  <label>
+                    <DollarSign size={16} className="mr-2" />
                     Prix *
                   </label>
                   <input
@@ -890,12 +1042,13 @@ const GestionReservation = () => {
                     required
                     min="0"
                     step="0.01"
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
+                    className="res-form-control"
+                    disabled={isLoading}
                   />
                 </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <DollarSign size={16} className="mr-2 text-blue-500" />
+                <div className="res-form-group">
+                  <label>
+                    <DollarSign size={16} className="mr-2" />
                     Prix Perso. *
                   </label>
                   <input
@@ -906,12 +1059,13 @@ const GestionReservation = () => {
                     required
                     min="0"
                     step="0.01"
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
+                    className="res-form-control"
+                    disabled={isLoading}
                   />
                 </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <User size={16} className="mr-2 text-blue-500" />
+                <div className="res-form-group">
+                  <label>
+                    <User size={16} className="mr-2" />
                     Nom complet *
                   </label>
                   <input
@@ -920,12 +1074,13 @@ const GestionReservation = () => {
                     value={newReservation.nom_complet}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
+                    className="res-form-control"
+                    disabled={isLoading}
                   />
                 </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Briefcase size={16} className="mr-2 text-blue-500" />
+                <div className="res-form-group">
+                  <label>
+                    <Briefcase size={16} className="mr-2" />
                     Entreprise *
                   </label>
                   <input
@@ -934,12 +1089,13 @@ const GestionReservation = () => {
                     value={newReservation.entreprise}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
+                    className="res-form-control"
+                    disabled={isLoading}
                   />
                 </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Mail size={16} className="mr-2 text-blue-500" />
+                <div className="res-form-group">
+                  <label>
+                    <Mail size={16} className="mr-2" />
                     Email *
                   </label>
                   <input
@@ -948,12 +1104,13 @@ const GestionReservation = () => {
                     value={newReservation.email}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
+                    className="res-form-control"
+                    disabled={isLoading}
                   />
                 </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Calendar size={16} className="mr-2 text-blue-500" />
+                <div className="res-form-group">
+                  <label>
+                    <Calendar size={16} className="mr-2" />
                     Date *
                   </label>
                   <input
@@ -962,12 +1119,13 @@ const GestionReservation = () => {
                     value={newReservation.date}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
+                    className="res-form-control"
+                    disabled={isLoading}
                   />
                 </div>
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <CheckCircle size={16} className="mr-2 text-blue-500" />
+                <div className="res-form-group">
+                  <label>
+                    <CheckCircle size={16} className="mr-2" />
                     Statut *
                   </label>
                   <select
@@ -975,7 +1133,8 @@ const GestionReservation = () => {
                     value={newReservation.statut}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                    className="res-form-control"
+                    disabled={isLoading}
                   >
                     <option value="en_attente">En attente</option>
                     <option value="signé">Signé</option>
@@ -984,21 +1143,21 @@ const GestionReservation = () => {
                 </div>
               </div>
               
-              <div className="form-group mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Types de Personnalisation</label>
-                <div className="multiselect relative">
+              <div className="res-form-group">
+                <label>Types de Personnalisation</label>
+                <div className="res-multiselect">
                   <div
-                    className="multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text"
-                    onClick={() => setShowCustomizationsDropdown(!showCustomizationsDropdown)}
+                    className="res-multiselect-input"
+                    onClick={() => !isLoading && setShowCustomizationsDropdown(!showCustomizationsDropdown)}
                   >
                     {newReservation.type_perso.map((type) => (
-                      <span key={type} className="tag bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
+                      <span key={type} className="res-tag">
                         {type}
                         <span
-                          className="tag-remove ml-1 cursor-pointer hover:text-blue-600"
+                          className="res-tag-remove"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleRemoveCustomizationType(type);
+                            !isLoading && handleRemoveCustomizationType(type);
                           }}
                         >
                           <X size={12} />
@@ -1010,25 +1169,27 @@ const GestionReservation = () => {
                       placeholder="Ajouter un type de personnalisation"
                       value={currentCustomization}
                       onChange={(e) => setCurrentCustomization(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddCustomizationType()}
+                      onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleAddCustomizationType()}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setShowCustomizationsDropdown(true);
+                        !isLoading && setShowCustomizationsDropdown(true);
                       }}
-                      className="flex-grow min-w-[200px] p-1 border-none focus:outline-none"
+                      className="res-multiselect-input-field"
+                      disabled={isLoading}
                     />
                     <button 
-                      className="dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
+                      className="res-dropdown-toggle"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setShowCustomizationsDropdown(!showCustomizationsDropdown);
+                        !isLoading && setShowCustomizationsDropdown(!showCustomizationsDropdown);
                       }}
+                      disabled={isLoading}
                     >
                       {showCustomizationsDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                   </div>
                   {showCustomizationsDropdown && (
-                    <div className="multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div className="res-multiselect-options">
                       {customizationsOptions
                         .filter(
                           (option) =>
@@ -1038,10 +1199,10 @@ const GestionReservation = () => {
                         .map((option) => (
                           <div
                             key={option}
-                            className="multiselect-option p-2 hover:bg-blue-50 cursor-pointer flex items-center"
-                            onClick={() => handleCustomizationSelect(option)}
+                            className="res-multiselect-option"
+                            onClick={() => !isLoading && handleCustomizationSelect(option)}
                           >
-                            <Circle size={8} className="mr-2 text-blue-500" />
+                            <Circle size={8} className="mr-2" />
                             {option}
                           </div>
                         ))}
@@ -1049,21 +1210,21 @@ const GestionReservation = () => {
                   )}
                 </div>
               </div>
-              <div className="form-group">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Fonctionnalités Incluses</label>
-                <div className="multiselect relative">
+              <div className="res-form-group">
+                <label>Fonctionnalités Incluses</label>
+                <div className="res-multiselect">
                   <div
-                    className="multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text"
-                    onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
+                    className="res-multiselect-input"
+                    onClick={() => !isLoading && setShowFeaturesDropdown(!showFeaturesDropdown)}
                   >
                     {newReservation.fonctionnalite.map((feature) => (
-                      <span key={feature} className="tag bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
+                      <span key={feature} className="res-tag res-feature-tag">
                         {feature}
                         <span
-                          className="tag-remove ml-1 cursor-pointer hover:text-green-600"
+                          className="res-tag-remove"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleRemoveFeature(feature);
+                            !isLoading && handleRemoveFeature(feature);
                           }}
                         >
                           <X size={12} />
@@ -1075,25 +1236,27 @@ const GestionReservation = () => {
                       placeholder="Ajouter une fonctionnalité"
                       value={currentFeature}
                       onChange={(e) => setCurrentFeature(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
+                      onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleAddFeature()}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setShowFeaturesDropdown(true);
+                        !isLoading && setShowFeaturesDropdown(true);
                       }}
-                      className="flex-grow min-w-[200px] p-1 border-none focus:outline-none"
+                      className="res-multiselect-input-field"
+                      disabled={isLoading}
                     />
                     <button 
-                      className="dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
+                      className="res-dropdown-toggle"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setShowFeaturesDropdown(!showFeaturesDropdown);
+                        !isLoading && setShowFeaturesDropdown(!showFeaturesDropdown);
                       }}
+                      disabled={isLoading}
                     >
                       {showFeaturesDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                   </div>
                   {showFeaturesDropdown && (
-                    <div className="multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div className="res-multiselect-options">
                       {featuresOptions
                         .filter(
                           (option) =>
@@ -1103,10 +1266,10 @@ const GestionReservation = () => {
                         .map((option) => (
                           <div
                             key={option}
-                            className="multiselect-option p-2 hover:bg-green-50 cursor-pointer flex items-center"
-                            onClick={() => handleFeatureSelect(option)}
+                            className="res-multiselect-option"
+                            onClick={() => !isLoading && handleFeatureSelect(option)}
                           >
-                            <Check size={8} className="mr-2 text-green-500" />
+                            <Check size={8} className="mr-2" />
                             {option}
                           </div>
                         ))}
@@ -1115,18 +1278,20 @@ const GestionReservation = () => {
                 </div>
               </div>
             </div>
-            <div className="form-footer p-4 border-t border-gray-200 flex justify-end space-x-3">
+            <div className="res-modal-footer">
               <button 
-                className="btn btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+                className="res-btn res-btn-outline"
                 onClick={() => setShowModal(false)}
+                disabled={isLoading}
               >
                 <X size={16} className="mr-2" />
                 Annuler
               </button>
               <button
-                className="btn btn-primary px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+                className="res-btn res-btn-primary"
                 onClick={handleAddReservation}
                 disabled={
+                  isLoading ||
                   !newReservation.formule ||
                   !newReservation.prix ||
                   !newReservation.prix_perso ||
@@ -1137,8 +1302,14 @@ const GestionReservation = () => {
                   !newReservation.statut
                 }
               >
-                <CheckCircle size={16} className="mr-2" />
-                Enregistrer
+                {isLoading ? (
+                  <span className="res-spinner"></span>
+                ) : (
+                  <>
+                    <CheckCircle size={16} className="mr-2" />
+                    Enregistrer
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -1147,33 +1318,34 @@ const GestionReservation = () => {
 
       {/* Modal de visualisation / modification */}
       {showViewModal && currentReservation && (
-        <div className="modal-overlay active fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="modal bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
-            <div className="modal-header flex justify-between items-center p-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+        <div className="res-modal-overlay">
+          <div className="res-modal res-view-modal">
+            <div className="res-modal-header">
+              <h2>
                 {isEditing ? (
-                  <Edit size={20} className="mr-2 text-blue-500" />
+                  <Edit size={20} className="mr-2" />
                 ) : (
-                  <Eye size={20} className="mr-2 text-blue-500" />
+                  <Eye size={20} className="mr-2" />
                 )}
                 Détails de la Réservation
               </h2>
               <button 
-                className="close-btn text-gray-400 hover:text-gray-500"
+                className="res-close-btn"
                 onClick={() => setShowViewModal(false)}
+                disabled={isLoading}
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="modal-body p-6">
-              <div className="invoice-container bg-white p-8 rounded-lg" id="invoice-print">
-                <div className="invoice-header flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
+            <div className="res-modal-body">
+              <div className="res-invoice-container" id="invoice-print">
+                <div className="res-invoice-header">
                   <div>
-                    <div className="invoice-title text-2xl font-bold text-gray-800">Facture</div>
-                    <div className="invoice-number text-sm text-gray-500 mt-1">
+                    <div className="res-invoice-title">Facture</div>
+                    <div className="res-invoice-number">
                       Réservation #{currentReservation.id_reservation}
                     </div>
-                    <div className="invoice-date text-sm text-gray-500 mt-1">
+                    <div className="res-invoice-date">
                       Date: {currentReservation.date ? 
                         new Date(currentReservation.date).toLocaleDateString('fr-FR', {
                           year: 'numeric',
@@ -1182,55 +1354,57 @@ const GestionReservation = () => {
                         }) : '-'}
                     </div>
                   </div>
-                  <div className="invoice-logo text-xl font-bold text-blue-500 flex items-center">
-                    <span className="w-6 h-6 bg-blue-500 rounded-full mr-2"></span>
+                  <div className="res-invoice-logo">
+                    <span className="res-logo-icon"></span>
                     B2B Réservations
                   </div>
                 </div>
-                <div className="invoice-details flex flex-col md:flex-row gap-6 mb-8">
-                  <div className="invoice-section bg-gray-50 p-4 rounded-lg flex-1">
-                    <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
-                      Client
-                    </h3>
+                <div className="res-invoice-details">
+                  <div className="res-invoice-section">
+                    <h3>Client</h3>
                     {isEditing ? (
                       <>
-                        <div className="form-group mb-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
+                        <div className="res-form-group">
+                          <label>Nom complet</label>
                           <input
                             type="text"
                             name="nom_complet"
                             value={currentReservation.nom_complet}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="res-edit-input"
+                            disabled={isLoading}
                           />
                         </div>
-                        <div className="form-group mb-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Entreprise</label>
+                        <div className="res-form-group">
+                          <label>Entreprise</label>
                           <input
                             type="text"
                             name="entreprise"
                             value={currentReservation.entreprise}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="res-edit-input"
+                            disabled={isLoading}
                           />
                         </div>
-                        <div className="form-group mb-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <div className="res-form-group">
+                          <label>Email</label>
                           <input
                             type="email"
                             name="email"
                             value={currentReservation.email}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="res-edit-input"
+                            disabled={isLoading}
                           />
                         </div>
-                        <div className="form-group">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                        <div className="res-form-group">
+                          <label>Statut</label>
                           <select
                             name="statut"
                             value={currentReservation.statut}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="res-edit-input"
+                            disabled={isLoading}
                           >
                             <option value="en_attente">En attente</option>
                             <option value="signé">Signé</option>
@@ -1240,57 +1414,57 @@ const GestionReservation = () => {
                       </>
                     ) : (
                       <>
-                        <p className="mb-2"><strong className="text-gray-700">Nom:</strong> {currentReservation.nom_complet || '-'}</p>
-                        <p className="mb-2"><strong className="text-gray-700">Entreprise:</strong> {currentReservation.entreprise || '-'}</p>
-                        <p className="mb-2"><strong className="text-gray-700">Email:</strong> {currentReservation.email || '-'}</p>
-                        <p><strong className="text-gray-700">Statut:</strong> 
-                          <span className={`statut ${getStatutClass(currentReservation.statut)} ml-2 px-2 py-1 rounded-full text-xs`}>
+                        <p><strong>Nom:</strong> {currentReservation.nom_complet || '-'}</p>
+                        <p><strong>Entreprise:</strong> {currentReservation.entreprise || '-'}</p>
+                        <p><strong>Email:</strong> {currentReservation.email || '-'}</p>
+                        <p><strong>Statut:</strong> 
+                          <span className={`res-status ${getStatutClass(currentReservation.statut)}`}>
                             {currentReservation.statut || 'en_attente'}
                           </span>
                         </p>
                       </>
                     )}
                   </div>
-                  <div className="invoice-section bg-gray-50 p-4 rounded-lg flex-1">
-                    <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
-                      Réservation
-                    </h3>
+                  <div className="res-invoice-section">
+                    <h3>Réservation</h3>
                     {isEditing ? (
                       <>
-                        <div className="form-group mb-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Formule</label>
+                        <div className="res-form-group">
+                          <label>Formule</label>
                           <select
                             name="formule"
                             value={currentReservation.formule}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="res-edit-input"
+                            disabled={isLoading}
                           >
                             <option value="Starter">Starter</option>
                             <option value="Pro">Pro</option>
                             <option value="Enterprise">Enterprise</option>
                           </select>
                         </div>
-                        <div className="form-group">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <div className="res-form-group">
+                          <label>Date</label>
                           <input
                             type="date"
                             name="date"
                             value={currentReservation.date}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="res-edit-input"
+                            disabled={isLoading}
                           />
                         </div>
                       </>
                     ) : (
                       <>
-                        <p className="mb-2">
-                          <strong className="text-gray-700">Formule:</strong> 
-                          <span className={`badge ${getBadgeClass(currentReservation.formule)} ml-2`}>
+                        <p>
+                          <strong>Formule:</strong> 
+                          <span className={`res-badge ${getBadgeClass(currentReservation.formule)}`}>
                             {currentReservation.formule || '-'}
                           </span>
                         </p>
                         <p>
-                          <strong className="text-gray-700">Date:</strong> {currentReservation.date ? 
+                          <strong>Date:</strong> {currentReservation.date ? 
                             new Date(currentReservation.date).toLocaleDateString('fr-FR', {
                               year: 'numeric',
                               month: 'long',
@@ -1301,23 +1475,23 @@ const GestionReservation = () => {
                     )}
                   </div>
                 </div>
-                <div className="invoice-personnalisation bg-gray-50 p-4 rounded-lg mb-6">
-                  <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
-                    Types de Personnalisation
-                  </h3>
+                <div className="res-invoice-personnalisation">
+                  <h3>Types de Personnalisation</h3>
                   {isEditing ? (
-                    <div className="multiselect relative">
-                      <div className="multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text">
+                    <div className="res-multiselect">
+                      <div className="res-multiselect-input">
                         {currentReservation.type_perso.map((type) => (
-                          <span key={type} className="tag bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
+                          <span key={type} className="res-tag">
                             {type}
                             <span
-                              className="tag-remove ml-1 cursor-pointer hover:text-blue-600"
+                              className="res-tag-remove"
                               onClick={() => {
-                                setCurrentReservation(prev => ({
-                                  ...prev,
-                                  type_perso: prev.type_perso.filter(t => t !== type)
-                                }));
+                                if (!isLoading) {
+                                  setCurrentReservation(prev => ({
+                                    ...prev,
+                                    type_perso: prev.type_perso.filter(t => t !== type)
+                                  }));
+                                }
                               }}
                             >
                               <X size={12} />
@@ -1328,7 +1502,7 @@ const GestionReservation = () => {
                           type="text"
                           placeholder="Ajouter un type"
                           onKeyPress={(e) => {
-                            if (e.key === 'Enter' && e.target.value) {
+                            if (!isLoading && e.key === 'Enter' && e.target.value) {
                               setCurrentReservation(prev => ({
                                 ...prev,
                                 type_perso: [...prev.type_perso, e.target.value]
@@ -1336,32 +1510,36 @@ const GestionReservation = () => {
                               e.target.value = '';
                             }
                           }}
-                          className="flex-grow min-w-[200px] p-1 border-none focus:outline-none"
+                          className="res-multiselect-input-field"
+                          disabled={isLoading}
                         />
                         <button 
-                          className="dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
-                          onClick={() => setShowCustomizationsDropdown(!showCustomizationsDropdown)}
+                          className="res-dropdown-toggle"
+                          onClick={() => !isLoading && setShowCustomizationsDropdown(!showCustomizationsDropdown)}
+                          disabled={isLoading}
                         >
                           {showCustomizationsDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
                       </div>
                       {showCustomizationsDropdown && (
-                        <div className="multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                        <div className="res-multiselect-options">
                           {customizationsOptions
                             .filter(option => !currentReservation.type_perso.includes(option))
                             .map((option) => (
                               <div
                                 key={option}
-                                className="multiselect-option p-2 hover:bg-blue-50 cursor-pointer flex items-center"
+                                className="res-multiselect-option"
                                 onClick={() => {
-                                  setCurrentReservation(prev => ({
-                                    ...prev,
-                                    type_perso: [...prev.type_perso, option]
-                                  }));
-                                  setShowCustomizationsDropdown(false);
+                                  if (!isLoading) {
+                                    setCurrentReservation(prev => ({
+                                      ...prev,
+                                      type_perso: [...prev.type_perso, option]
+                                    }));
+                                    setShowCustomizationsDropdown(false);
+                                  }
                                 }}
                               >
-                                <Circle size={8} className="mr-2 text-blue-500" />
+                                <Circle size={8} className="mr-2" />
                                 {option}
                               </div>
                             ))}
@@ -1372,34 +1550,34 @@ const GestionReservation = () => {
                     <ul>
                       {currentReservation.type_perso && currentReservation.type_perso.length > 0 ? (
                         currentReservation.type_perso.map((type, idx) => (
-                          <li key={idx} className="flex items-center py-2">
-                            <Circle size={8} className="mr-2 text-blue-500" />
+                          <li key={idx}>
+                            <Circle size={8} className="mr-2" />
                             {type}
                           </li>
                         ))
                       ) : (
-                        <li className="text-gray-500 py-2">Aucune personnalisation</li>
+                        <li>Aucune personnalisation</li>
                       )}
                     </ul>
                   )}
                 </div>
-                <div className="invoice-features bg-gray-50 p-4 rounded-lg mb-6">
-                  <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
-                    Fonctionnalités Incluses
-                  </h3>
+                <div className="res-invoice-features">
+                  <h3>Fonctionnalités Incluses</h3>
                   {isEditing ? (
-                    <div className="multiselect relative">
-                      <div className="multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text">
+                    <div className="res-multiselect">
+                      <div className="res-multiselect-input">
                         {currentReservation.fonctionnalite.map((feature) => (
-                          <span key={feature} className="tag bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
+                          <span key={feature} className="res-tag res-feature-tag">
                             {feature}
                             <span
-                              className="tag-remove ml-1 cursor-pointer hover:text-green-600"
+                              className="res-tag-remove"
                               onClick={() => {
-                                setCurrentReservation(prev => ({
-                                  ...prev,
-                                  fonctionnalite: prev.fonctionnalite.filter(f => f !== feature)
-                                }));
+                                if (!isLoading) {
+                                  setCurrentReservation(prev => ({
+                                    ...prev,
+                                    fonctionnalite: prev.fonctionnalite.filter(f => f !== feature)
+                                  }));
+                                }
                               }}
                             >
                               <X size={12} />
@@ -1410,7 +1588,7 @@ const GestionReservation = () => {
                           type="text"
                           placeholder="Ajouter une fonctionnalité"
                           onKeyPress={(e) => {
-                            if (e.key === 'Enter' && e.target.value) {
+                            if (!isLoading && e.key === 'Enter' && e.target.value) {
                               setCurrentReservation(prev => ({
                                 ...prev,
                                 fonctionnalite: [...prev.fonctionnalite, e.target.value]
@@ -1418,32 +1596,36 @@ const GestionReservation = () => {
                               e.target.value = '';
                             }
                           }}
-                          className="flex-grow min-w-[200px] p-1 border-none focus:outline-none"
+                          className="res-multiselect-input-field"
+                          disabled={isLoading}
                         />
                         <button 
-                          className="dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
-                          onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
+                          className="res-dropdown-toggle"
+                          onClick={() => !isLoading && setShowFeaturesDropdown(!showFeaturesDropdown)}
+                          disabled={isLoading}
                         >
                           {showFeaturesDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
                       </div>
                       {showFeaturesDropdown && (
-                        <div className="multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                        <div className="res-multiselect-options">
                           {featuresOptions
                             .filter(option => !currentReservation.fonctionnalite.includes(option))
                             .map((option) => (
                               <div
                                 key={option}
-                                className="multiselect-option p-2 hover:bg-green-50 cursor-pointer flex items-center"
+                                className="res-multiselect-option"
                                 onClick={() => {
-                                  setCurrentReservation(prev => ({
-                                    ...prev,
-                                    fonctionnalite: [...prev.fonctionnalite, option]
-                                  }));
-                                  setShowFeaturesDropdown(false);
+                                  if (!isLoading) {
+                                    setCurrentReservation(prev => ({
+                                      ...prev,
+                                      fonctionnalite: [...prev.fonctionnalite, option]
+                                    }));
+                                    setShowFeaturesDropdown(false);
+                                  }
                                 }}
                               >
-                                <Check size={8} className="mr-2 text-green-500" />
+                                <Check size={8} className="mr-2" />
                                 {option}
                               </div>
                             ))}
@@ -1454,26 +1636,24 @@ const GestionReservation = () => {
                     <ul>
                       {currentReservation.fonctionnalite && currentReservation.fonctionnalite.length > 0 ? (
                         currentReservation.fonctionnalite.map((feature, idx) => (
-                          <li key={idx} className="flex items-center py-2">
-                            <Check size={8} className="mr-2 text-green-500" />
+                          <li key={idx}>
+                            <Check size={8} className="mr-2" />
                             {feature}
                           </li>
                         ))
                       ) : (
-                        <li className="text-gray-500 py-2">Aucune fonctionnalité supplémentaire</li>
+                        <li>Aucune fonctionnalité supplémentaire</li>
                       )}
                     </ul>
                   )}
                 </div>
-                <div className="invoice-total bg-gradient-to-r from-blue-500 to-gray-800 p-6 rounded-lg mb-6 text-white">
-                  <h3 className="text-xl font-semibold border-b border-white border-opacity-20 pb-2 mb-4">
-                    Détail du prix
-                  </h3>
+                <div className="res-invoice-total">
+                  <h3>Détail du prix</h3>
                   {isEditing ? (
                     <>
-                      <div className="price-edit mb-3">
-                        <label className="block mb-1">Prix de base:</label>
-                        <div className="flex items-center">
+                      <div className="res-price-edit">
+                        <label>Prix de base:</label>
+                        <div className="res-price-input">
                           <input
                             type="number"
                             name="prix"
@@ -1481,14 +1661,15 @@ const GestionReservation = () => {
                             onChange={handleEditInputChange}
                             min="0"
                             step="0.01"
-                            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="res-edit-input"
+                            disabled={isLoading}
                           />
-                          <span className="ml-2">€</span>
+                          <span>€</span>
                         </div>
                       </div>
-                      <div className="price-edit">
-                        <label className="block mb-1">Prix personnalisation:</label>
-                        <div className="flex items-center">
+                      <div className="res-price-edit">
+                        <label>Prix personnalisation:</label>
+                        <div className="res-price-input">
                           <input
                             type="number"
                             name="prix_perso"
@@ -1496,55 +1677,59 @@ const GestionReservation = () => {
                             onChange={handleEditInputChange}
                             min="0"
                             step="0.01"
-                            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="res-edit-input"
+                            disabled={isLoading}
                           />
-                          <span className="ml-2">€</span>
+                          <span>€</span>
                         </div>
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="price-row mb-2">
-                        <span className="price-label">Prix de base:</span>
-                        <span className="price-value">{currentReservation.prix || '0'} €</span>
+                      <div className="res-price-row">
+                        <span>Prix de base:</span>
+                        <span>{formatMoney(currentReservation.prix || 0)}</span>
                       </div>
-                      <div className="price-row mb-2">
-                        <span className="price-label">Prix personnalisation:</span>
-                        <span className="price-value">{currentReservation.prix_perso || '0'} €</span>
+                      <div className="res-price-row">
+                        <span>Prix personnalisation:</span>
+                        <span>{formatMoney(currentReservation.prix_perso || 0)}</span>
                       </div>
                     </>
                   )}
-                  <div className="price-row total-amount mt-4 text-xl font-bold">
+                  <div className="res-total-amount">
                     <span>Total:</span>
-                    <span>{calculateTotal(currentReservation)} €</span>
+                    <span>{formatMoney(calculateTotal(currentReservation))}</span>
                   </div>
                 </div>
-                <div className="invoice-footer text-center text-gray-500 text-sm pt-4 border-t border-gray-200">
+                <div className="res-invoice-footer">
                   <p>Merci pour votre confiance !</p>
                   <p>B2B Réservations - contact@b2b-reservations.com</p>
                 </div>
               </div>
             </div>
-            <div className="form-footer p-4 border-t border-gray-200 flex justify-end space-x-3">
+            <div className="res-modal-footer">
               {!isEditing ? (
                 <>
                   <button
-                    className="btn btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
+                    className="res-btn res-btn-outline"
                     onClick={() => setShowViewModal(false)}
+                    disabled={isLoading}
                   >
                     <X size={16} className="mr-2" />
                     Fermer
                   </button>
                   <button 
-                    className="btn btn-primary px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
+                    className="res-btn res-btn-primary"
                     onClick={printInvoice}
+                    disabled={isLoading}
                   >
                     <Printer size={16} className="mr-2" />
                     Imprimer
                   </button>
                   <button
-                    className="btn btn-success px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center no-print"
+                    className="res-btn res-btn-success"
                     onClick={enableEditing}
+                    disabled={isLoading}
                   >
                     <Edit size={16} className="mr-2" />
                     Modifier
@@ -1553,18 +1738,26 @@ const GestionReservation = () => {
               ) : (
                 <>
                   <button
-                    className="btn btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
+                    className="res-btn res-btn-outline"
                     onClick={() => setIsEditing(false)}
+                    disabled={isLoading}
                   >
                     <X size={16} className="mr-2" />
                     Annuler
                   </button>
                   <button
-                    className="btn btn-success px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center no-print"
+                    className="res-btn res-btn-success"
                     onClick={handleUpdateReservation}
+                    disabled={isLoading}
                   >
-                    <CheckCircle size={16} className="mr-2" />
-                    Enregistrer
+                    {isLoading ? (
+                      <span className="res-spinner"></span>
+                    ) : (
+                      <>
+                        <CheckCircle size={16} className="mr-2" />
+                        Enregistrer
+                      </>
+                    )}
                   </button>
                 </>
               )}
