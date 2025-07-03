@@ -13,7 +13,7 @@ import {
   Menu as MenuIcon
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
+import footLogo from '../assets/footsolutions.png';
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -100,7 +100,12 @@ const Sidebar = () => {
       <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-container">
-            {!isCollapsed && <span className="logo-text">FootSpace Admin</span>}
+          <img 
+  src={footLogo}
+  alt="FootSpace Logo" 
+  className="logo-icon"
+/>
+            {!isCollapsed && <span className="logo-text">Foot Admin suite</span>}
           </div>
           <button 
             className="collapse-button"
@@ -162,6 +167,11 @@ const Sidebar = () => {
       <div className={`mobile-sidebar ${isMobileSidebarOpen ? 'open' : ''}`}>
         <div className="mobile-sidebar-header">
           <div className="logo-container">
+            <img 
+              src="https://via.placeholder.com/40x40?text=FS" 
+              alt="FootSpace Logo" 
+              className="logo-icon"
+            />
             <span className="logo-text">FootSpace Admin</span>
           </div>
           <button 
@@ -276,13 +286,17 @@ const Sidebar = () => {
         }
 
         .logo-icon {
-          color: var(--accent-color);
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          object-fit: cover;
         }
 
         .logo-text {
-          font-size: 1.25rem;
+          font-size: 1.05rem;
           font-weight: 700;
           white-space: nowrap;
+          color: var(--text-light);
         }
 
         .collapse-button {

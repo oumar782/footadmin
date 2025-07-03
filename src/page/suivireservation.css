@@ -25,7 +25,7 @@
     --spacing-sm: 15px;
     --spacing-md: 12px;
     --spacing-lg: 16px;
-    --spacing-xl: 12px;
+    --spacing-xl: 32px;
     --spacing-xxl: 32px;
     
     /* Typography */
@@ -66,21 +66,30 @@
   /* ==========================================================================
      BASE STYLES & RESETS
      ========================================================================== */
-  body {
-    background-color: rgba(6, 94, 6, 0.1);
+     body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--color-dark);
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+    }
     
-  }
-  
-  /* ==========================================================================
-     LAYOUT & CONTAINERS
-     ========================================================================== */
-  .gestion-reservation-container {
-    margin-top: 80px ;
-    margin-left: 100px ;
-    margin-right: -200px ;
-    padding: var(--spacing-xl);
+    /* ==========================================================================
+       GLOBAL CONTAINER
+       ========================================================================== */
+       .global-container {
+        max-width: 3800px; /* Augmentation de la largeur maximale */
+        width: 105%; /* Ajout d'une largeur relative */
+        margin: 0 auto;
+        padding: var(--spacing-xl);
+        background-color: var(--color-white);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-lg);
+        margin-top: 4rem;
+        margin-left: 6.1rem;
+      }
     
-  }
   
   /* ==========================================================================
      HEADER STYLES

@@ -5,9 +5,10 @@ import {
   Printer, CheckCircle, XCircle, Plus, X, ChevronDown, ChevronUp, 
   Edit, Trash2, Eye, Calendar, User, Briefcase, Mail, Tag, 
   Layers, DollarSign, Search, Filter, BadgeCheck, BadgePercent,
-  Settings, CreditCard, ArrowRight, Circle, Check
+  Settings, CreditCard, ArrowRight, Circle, Check, Clock, HardDrive, 
+  Cpu, Shield, BookOpen, BarChart2, Smartphone, Code, Server
 } from 'lucide-react';
-import './Gestionreservation.css';
+import './GestionReservation.css';
 
 const GestionReservation = () => {
   // États
@@ -27,8 +28,12 @@ const GestionReservation = () => {
     type_perso: [],
     fonctionnalite: [],
     email: '',
+    telephone: '',
+    notes: '',
     statut: 'en_attente',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    duree: '1 mois',
+    paiement: 'non_paye'
   });
 
   const [currentFeature, setCurrentFeature] = useState('');
@@ -39,24 +44,63 @@ const GestionReservation = () => {
 
   // Options
   const featuresOptions = [
-    'Support 24/7',
-    'API avancée',
-    'Support 9h-18h',
-    'Formation en ligne',
-    'Accès prioritaire',
-    'Rapports analytiques',
-    'Intégration CRM',
-    'Stockage étendu'
+    { name: 'Support 24/7', icon: <Clock size={14} /> },
+    { name: 'API avancée', icon: <Code size={14} /> },
+    { name: 'Support 9h-18h', icon: <Clock size={14} /> },
+    { name: 'Formation en ligne', icon: <BookOpen size={14} /> },
+    { name: 'Accès prioritaire', icon: <Shield size={14} /> },
+    { name: 'Rapports analytiques', icon: <BarChart2 size={14} /> },
+    { name: 'Intégration CRM', icon: <Server size={14} /> },
+    { name: 'Stockage étendu', icon: <HardDrive size={14} /> },
+    { name: 'Application mobile', icon: <Smartphone size={14} /> },
+    { name: 'Sauvegarde quotidienne', icon: <HardDrive size={14} /> }
   ];
 
   const customizationsOptions = ['Starter', 'Pro', 'Enterprise'];
-  const statutOptions = ['signé', 'perdu', 'en_attente'];
+  const statutOptions = ['signé', 'perdu', 'en_attente', 'en_cours'];
+  const dureeOptions = ['1 mois', '3 mois', '6 mois', '1 an'];
+  const paiementOptions = ['payé', 'non_paye', 'partiel'];
 
   // Formules avec prix par défaut
   const formules = {
-    Starter: { prix: 99, features: ['Jusqua 2 terrains', 'Réservations en ligne', 'Paiements intégrés', 'Tableau de bord basique', 'Support par email'] },
-    Pro: { prix: 179, features: ['Jusquà 5 terrains', 'Réservations en ligne', 'Paiements intégrés', 'Tableau de bord avancé', 'Statistiques détaillées', 'Application mobile', 'Personnalisation avancée', 'Support prioritaire'] },
-    Enterprise: { prix: 349, features: ['Terrains illimités', 'Réservations en ligne', 'Paiements intégrés', 'Tableau de bord premium', 'Statistiques avancées', 'Application mobile personnalisée', 'Personnalisation complète', 'API dédiée', 'Support 24/7', 'Gestionnaire de compte dédié'] }
+    Starter: { 
+      prix: 99, 
+      features: [
+        'Jusqua 2 terrains', 
+        'Réservations en ligne', 
+        'Paiements intégrés', 
+        'Tableau de bord basique', 
+        'Support par email'
+      ] 
+    },
+    Pro: { 
+      prix: 179, 
+      features: [
+        'Jusquà 5 terrains', 
+        'Réservations en ligne', 
+        'Paiements intégrés', 
+        'Tableau de bord avancé', 
+        'Statistiques détaillées', 
+        'Application mobile', 
+        'Personnalisation avancée', 
+        'Support prioritaire'
+      ] 
+    },
+    Enterprise: { 
+      prix: 349, 
+      features: [
+        'Terrains illimités', 
+        'Réservations en ligne', 
+        'Paiements intégrés', 
+        'Tableau de bord premium', 
+        'Statistiques avancées', 
+        'Application mobile personnalisée', 
+        'Personnalisation complète', 
+        'API dédiée', 
+        'Support 24/7', 
+        'Gestionnaire de compte dédié'
+      ] 
+    }
   };
 
   // Charger les réservations depuis l'API
@@ -117,9 +161,11 @@ const GestionReservation = () => {
           (r.nom_complet && r.nom_complet.toLowerCase().includes(term)) ||
           (r.entreprise && r.entreprise.toLowerCase().includes(term)) ||
           (r.email && r.email.toLowerCase().includes(term)) ||
+          (r.telephone && r.telephone.toLowerCase().includes(term)) ||
           (r.fonctionnalite && r.fonctionnalite.some((f) => f && f.toLowerCase().includes(term))) ||
           (r.type_perso && r.type_perso.some((t) => t && t.toLowerCase().includes(term))) ||
-          (r.statut && r.statut.toLowerCase().includes(term))
+          (r.statut && r.statut.toLowerCase().includes(term)) ||
+          (r.notes && r.notes.toLowerCase().includes(term))
       );
     }
     setFilteredReservations(results);
@@ -188,16 +234,9 @@ const GestionReservation = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            formule: currentReservation.formule,
-            prix: currentReservation.prix,
-            prix_perso: currentReservation.prix_perso,
-            nom_complet: currentReservation.nom_complet,
-            entreprise: currentReservation.entreprise,
+            ...currentReservation,
             type_perso: currentReservation.type_perso,
-            fonctionnalite: currentReservation.fonctionnalite,
-            email: currentReservation.email,
-            date: currentReservation.date,
-            statut: currentReservation.statut
+            fonctionnalite: currentReservation.fonctionnalite
           }),
         }
       );
@@ -257,15 +296,19 @@ const GestionReservation = () => {
       type_perso: [],
       fonctionnalite: [],
       email: '',
+      telephone: '',
+      notes: '',
+      statut: 'en_attente',
       date: new Date().toISOString().split('T')[0],
-      statut: 'en_attente'
+      duree: '1 mois',
+      paiement: 'non_paye'
     });
   };
 
   // Gestion des changements de formulaire
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewReservation((prev) => ({
+    setNewReservation(prev => ({
       ...prev,
       [name]: value
     }));
@@ -282,16 +325,16 @@ const GestionReservation = () => {
 
   // Classes CSS pour les badges
   const getBadgeClass = (formule) => {
-    if (!formule) return 'badge-basique';
+    if (!formule) return 'gr-badge-basique';
     switch (formule.toLowerCase()) {
       case 'starter':
-        return 'badge-premium';
+        return 'gr-badge-premium';
       case 'pro':
-        return 'badge-standard';
+        return 'gr-badge-standard';
       case 'enterprise':
-        return 'badge-standard';
+        return 'gr-badge-standard';
       default:
-        return 'badge-basique';
+        return 'gr-badge-basique';
     }
   };
 
@@ -299,13 +342,29 @@ const GestionReservation = () => {
   const getStatutClass = (statut) => {
     switch (statut) {
       case 'signé':
-        return 'statut-signe';
+        return 'gr-statut-signe';
       case 'perdu':
-        return 'statut-perdu';
+        return 'gr-statut-perdu';
       case 'en_attente':
-        return 'statut-attente';
+        return 'gr-statut-attente';
+      case 'en_cours':
+        return 'gr-statut-encours';
       default:
-        return 'statut-attente';
+        return 'gr-statut-attente';
+    }
+  };
+
+  // Classes CSS pour le paiement
+  const getPaiementClass = (paiement) => {
+    switch (paiement) {
+      case 'payé':
+        return 'gr-paiement-paye';
+      case 'non_paye':
+        return 'gr-paiement-nonpaye';
+      case 'partiel':
+        return 'gr-paiement-partiel';
+      default:
+        return 'gr-paiement-nonpaye';
     }
   };
 
@@ -329,254 +388,342 @@ const GestionReservation = () => {
 
   // Impression de la facture
   const printInvoice = () => {
-    const printContent = document.getElementById('invoice-print');
+    const content = document.getElementById('invoice-print').innerHTML;
     const printWindow = window.open('', '_blank');
+    
     printWindow.document.write(`
       <html>
         <head>
-          <title>Facture Réservation #${currentReservation.id_reservation}</title>
+          <title>Facture #${currentReservation.id_reservation}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
-            
-            body { 
-              font-family: 'Montserrat', sans-serif; 
-              color: #333; 
-              background-color: #fff;
-              margin: 0;
-              padding: 0;
+            @page {
+              size: A4;
+              margin: 1cm;
             }
-            
-            .invoice-container { 
-              max-width: 800px; 
-              margin: 0 auto; 
-              padding: 40px;
-              background: white;
-              box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            }
-            
-            .invoice-header { 
-              display: flex; 
-              justify-content: space-between; 
-              align-items: center;
-              margin-bottom: 40px; 
-              padding-bottom: 20px;
-              border-bottom: 1px solid #eee;
-            }
-            
-            .invoice-title { 
-              font-size: 28px; 
-              font-weight: 700; 
-              color:rgb(38, 110, 16); 
-              margin: 0;
-            }
-            
-            .invoice-logo { 
-              font-size: 24px; 
-              font-weight: 700; 
-              color:rgb(18, 66, 3);
-              display: flex;
-              align-items: center;
-            }
-            
-            .invoice-logo:before {
-              content: "";
-              display: inline-block;
-              width: 30px;
-              height: 30px;
-              background-color:rgb(26, 79, 4);
-              border-radius: 50%;
-              margin-right: 10px;
-            }
-            
-            .invoice-details { 
-              display: flex; 
-              justify-content: space-between; 
-              margin-bottom: 40px;
-              gap: 30px;
-            }
-            
-            .invoice-section { 
-              flex: 1;
-              background:rgb(25, 88, 10);
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 800px;
+              margin: 0 auto;
               padding: 20px;
-              border-radius: 8px;
             }
-            
-            .invoice-section h3 { 
-              border-bottom: 2px solidrgb(9, 83, 14); 
-              padding-bottom: 10px; 
-              color:rgb(24, 76, 7);
-              font-size: 18px;
-              font-weight: bold;
-              margin-top: 0;
-              margin-bottom: 15px;
-            }
-            
-            .invoice-features, 
-            .invoice-personnalisation { 
-              margin-bottom: 30px;
-              background: #f9f9f9;
-              padding: 20px;
-              border-radius: 8px;
-            }
-            
-            .invoice-features h3, 
-            .invoice-personnalisation h3 { 
-              border-bottom: 2px solidrgb(18, 65, 4); 
-              padding-bottom: 10px; 
-              color:rgb(6, 82, 12);
-              font-size: 18px;
-              font-weight: 600;
-              margin-top: 0;
-              margin-bottom: 15px;
-            }
-            
-            ul { 
-              list-style-type: none; 
-              padding-left: 0;
-              margin: 0;
-              color:rgb(63, 11, 11);
-            }
-            
-            li { 
-              padding: 8px 0;
-              border-bottom: 1px solid #eee;
-              display: flex;
-              align-items: center;
-              color:rgb(8, 4, 4);
-            }
-            
-            li:last-child {
-              border-bottom: none;
-            }
-            
-            li:before {
-              content: "•";
-              color:rgb(6, 83, 28);
-              font-weight: bold;
-              display: inline-block;
-              width: 1em;
-              margin-right: 10px;
-            }
-            
-            .invoice-total { 
-              background: linear-gradient(135deg,rgb(4, 70, 4), #2c3e50);
-              padding: 25px;
-              border-radius: 8px;
-              color: white;
-              margin-bottom: 30px;
-            }
-            
-            .invoice-total h3 {
-              color: green;
-              margin-top: 0;
-              font-size: 20px;
-              border-bottom: 2px solid rgba(255,255,255,0.2);
-              padding-bottom: 10px;
-              margin-bottom: 15px;
-            }
-            
-            .total-amount { 
-              font-size: 24px; 
-              font-weight: 700; 
-              color: white;
-              text-align: right;
-              margin-top: 15px;
-            }
-            
-            .invoice-footer { 
-              margin-top: 40px; 
-              text-align: center; 
-              color:rgb(9, 156, 46); 
-              font-size: 14px;
-              padding-top: 20px;
-              border-top: 1px solid #eee;
-            }
-            
-            .badge { 
-              padding: 5px 12px; 
-              border-radius: 20px; 
-              font-size: 12px; 
-              font-weight: 600;
-              display: inline-block;
-              margin-left: 10px;
-              background: linear-gradient(135deg,rgb(12, 116, 7),rgb(166, 182, 22));
-            }
-            
-            .badge-premium { 
-              background: linear-gradient(135deg,rgb(12, 116, 7),rgb(166, 182, 22));
-              color: white; 
-            }
-            
-            .badge-standard { 
-              background: linear-gradient(135deg,rgb(52, 219, 69),rgb(41, 53, 185));
-              color: white; 
-            }
-            
-            .badge-basique { 
-              background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-              color: white; 
-            }
-            
-            .statut-signe {
-              background-color: #10b981;
-              color: white;
-            }
-            
-            .statut-perdu {
-              background-color: #ef4444;
-              color: white;
-            }
-            
-            .statut-attente {
-              background-color: #f59e0b;
-              color: white;
-            }
-            
-            .price-row {
+            .invoice-header {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 10px;
-              color:rgb(193, 10, 10);
+              align-items: flex-end;
+              margin-bottom: 30px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #f0f0f0;
             }
-            
-            .price-label {
+            .invoice-title {
+              font-size: 28px;
+              font-weight: 700;
+              color: #2c3e50;
+              margin-bottom: 5px;
+            }
+            .invoice-subtitle {
+              font-size: 14px;
+              color: #7f8c8d;
+              margin-bottom: 15px;
+            }
+            .invoice-logo {
+              display: flex;
+              align-items: center;
+              font-size: 18px;
+              font-weight: 700;
+              color: #3498db;
+            }
+            .logo-circle {
+              width: 40px;
+              height: 40px;
+              background-color: #3498db;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 10px;
+              color: white;
               font-weight: bold;
-              color:rgb(6, 23, 4);
             }
-            
-            .price-value {
+            .invoice-details {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 30px;
+            }
+            .client-info, .invoice-info {
+              flex: 1;
+            }
+            .info-title {
+              font-size: 16px;
               font-weight: 600;
-              color:rgb(222, 12, 12);
+              color: #2c3e50;
+              margin-bottom: 10px;
+              padding-bottom: 5px;
+              border-bottom: 1px solid #eee;
             }
-            
-            .invoice-number {
-              font-size: 14px;
-              color:rgb(222, 12, 12);
-              margin-top: 5px;
+            .info-row {
+              display: flex;
+              margin-bottom: 8px;
             }
-            
-            .invoice-date {
+            .info-label {
+              font-weight: 600;
+              min-width: 120px;
+              color: #7f8c8d;
+            }
+            .status-badge {
+              display: inline-block;
+              padding: 3px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: 600;
+              margin-left: 10px;
+            }
+            .status-signed {
+              background-color: #e8f5e9;
+              color: #2e7d32;
+            }
+            .status-pending {
+              background-color: #fff8e1;
+              color: #f57f17;
+            }
+            .status-lost {
+              background-color: #ffebee;
+              color: #c62828;
+            }
+            .formule-badge {
+              display: inline-block;
+              padding: 3px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: 600;
+              margin-left: 10px;
+            }
+            .badge-premium {
+              background-color: #e3f2fd;
+              color: #1565c0;
+            }
+            .badge-standard {
+              background-color: #f3e5f5;
+              color: #8e24aa;
+            }
+            .badge-enterprise {
+              background-color: #e8eaf6;
+              color: #3949ab;
+            }
+            .invoice-items {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+            }
+            .invoice-items th {
+              background-color: #f5f5f5;
+              padding: 10px;
+              text-align: left;
+              font-weight: 600;
+              color: #2c3e50;
+              border-bottom: 2px solid #eee;
+            }
+            .invoice-items td {
+              padding: 12px 10px;
+              border-bottom: 1px solid #eee;
+            }
+            .invoice-items tr:last-child td {
+              border-bottom: none;
+            }
+            .invoice-total {
+              margin-top: 20px;
+              text-align: right;
+            }
+            .total-row {
+              display: inline-block;
+              margin-bottom: 10px;
+            }
+            .total-label {
+              font-weight: 600;
+              min-width: 150px;
+              display: inline-block;
+              text-align: right;
+              padding-right: 20px;
+            }
+            .total-amount {
+              font-size: 18px;
+              font-weight: 700;
+              color: #2c3e50;
+              margin-top: 10px;
+              padding-top: 10px;
+              border-top: 2px solid #eee;
+            }
+            .invoice-footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 2px solid #f0f0f0;
+              text-align: center;
+              color: #7f8c8d;
               font-size: 14px;
-              color:rgb(124, 5, 17);
-              margin-top: 5px;
+            }
+            .features-list, .customizations-list {
+              margin: 10px 0;
+              padding-left: 20px;
+            }
+            .features-list li, .customizations-list li {
+              margin-bottom: 5px;
+              position: relative;
+            }
+            .features-list li:before {
+              content: "✓";
+              color: #4caf50;
+              position: absolute;
+              left: -20px;
+            }
+            .customizations-list li:before {
+              content: "•";
+              color: #3498db;
+              position: absolute;
+              left: -20px;
+            }
+            .section-title {
+              font-size: 18px;
+              font-weight: 600;
+              color: #2c3e50;
+              margin: 25px 0 10px 0;
+              padding-bottom: 5px;
+              border-bottom: 1px solid #eee;
             }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          <div class="invoice-header">
+            <div>
+              <div class="invoice-title">Facture</div>
+              <div class="invoice-subtitle">Réservation #${currentReservation.id_reservation}</div>
+            </div>
+            <div class="invoice-logo">
+              <div class="logo-circle">FS</div>
+              Footspace Solutions
+            </div>
+          </div>
+
+          <div class="invoice-details">
+            <div class="client-info">
+              <div class="info-title">Client</div>
+              <div class="info-row">
+                <div class="info-label">Nom:</div>
+                <div>${currentReservation.nom_complet || '-'}</div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Entreprise:</div>
+                <div>${currentReservation.entreprise || '-'}</div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Email:</div>
+                <div>${currentReservation.email || '-'}</div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Statut:</div>
+                <div>
+                  ${currentReservation.statut || 'en_attente'}
+                  <span class="status-badge ${getStatutClass(currentReservation.statut)}">
+                    ${currentReservation.statut === 'signé' ? 'Payé' : 
+                      currentReservation.statut === 'perdu' ? 'Annulé' : 'En attente'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="invoice-info">
+              <div class="info-title">Facture</div>
+              <div class="info-row">
+                <div class="info-label">Date:</div>
+                <div>${
+                  currentReservation.date ? 
+                  new Date(currentReservation.date).toLocaleDateString('fr-FR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }) : '-'
+                }</div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Formule:</div>
+                <div>
+                  ${currentReservation.formule || '-'}
+                  <span class="formule-badge ${getBadgeClass(currentReservation.formule)}">
+                    ${currentReservation.formule || ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">Détails de la réservation</div>
+          
+          <table class="invoice-items">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Abonnement ${currentReservation.formule || 'Standard'}</td>
+                <td>${currentReservation.prix || '0'} €</td>
+              </tr>
+              <tr>
+                <td>Personnalisations supplémentaires</td>
+                <td>${currentReservation.prix_perso || '0'} €</td>
+              </tr>
+              <tr>
+                <td><strong>Total HT</strong></td>
+                <td><strong>${calculateTotal(currentReservation)} €</strong></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="section-title">Personnalisations</div>
+          <ul class="customizations-list">
+            ${
+              currentReservation.type_perso && currentReservation.type_perso.length > 0 ? 
+              currentReservation.type_perso.map(type => `<li>${type}</li>`).join('') : 
+              '<li>Aucune personnalisation supplémentaire</li>'
+            }
+          </ul>
+
+          <div class="section-title">Fonctionnalités incluses</div>
+          <ul class="features-list">
+            ${
+              currentReservation.fonctionnalite && currentReservation.fonctionnalite.length > 0 ? 
+              currentReservation.fonctionnalite.map(feature => `<li>${feature}</li>`).join('') : 
+              '<li>Aucune fonctionnalité supplémentaire</li>'
+            }
+          </ul>
+
+          <div class="invoice-total">
+            <div class="total-row">
+              <span class="total-label">Montant total:</span>
+              <span>${calculateTotal(currentReservation)} €</span>
+            </div>
+            <div class="total-amount">
+              Net à payer: ${calculateTotal(currentReservation)} €
+            </div>
+          </div>
+
+          <div class="invoice-footer">
+            <p>Merci pour votre confiance ! Pour toute question, contactez-nous à contact@footspace-solutions.com</p>
+            <p>Footspace Solutions - SAS au capital de 50 000 € - RCS Casablanca 123 456 789</p>
+          </div>
         </body>
       </html>
     `);
+    
     printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => printWindow.print(), 500);
+    setTimeout(() => printWindow.print(), 1000);
   };
 
   // Gestion des fonctionnalités incluses
   const handleAddFeature = () => {
     if (currentFeature && !newReservation.fonctionnalite.includes(currentFeature)) {
-      setNewReservation((prev) => ({
+      setNewReservation(prev => ({
         ...prev,
         fonctionnalite: [...prev.fonctionnalite, currentFeature]
       }));
@@ -585,7 +732,7 @@ const GestionReservation = () => {
   };
 
   const handleRemoveFeature = (feature) => {
-    setNewReservation((prev) => ({
+    setNewReservation(prev => ({
       ...prev,
       fonctionnalite: prev.fonctionnalite.filter((f) => f !== feature)
     }));
@@ -593,7 +740,7 @@ const GestionReservation = () => {
 
   const handleFeatureSelect = (feature) => {
     if (!newReservation.fonctionnalite.includes(feature)) {
-      setNewReservation((prev) => ({
+      setNewReservation(prev => ({
         ...prev,
         fonctionnalite: [...prev.fonctionnalite, feature]
       }));
@@ -604,7 +751,7 @@ const GestionReservation = () => {
   // Gestion des types de personnalisation
   const handleAddCustomizationType = () => {
     if (currentCustomization && !newReservation.type_perso.includes(currentCustomization)) {
-      setNewReservation((prev) => ({
+      setNewReservation(prev => ({
         ...prev,
         type_perso: [...prev.type_perso, currentCustomization]
       }));
@@ -613,7 +760,7 @@ const GestionReservation = () => {
   };
 
   const handleRemoveCustomizationType = (type) => {
-    setNewReservation((prev) => ({
+    setNewReservation(prev => ({
       ...prev,
       type_perso: prev.type_perso.filter((t) => t !== type)
     }));
@@ -621,7 +768,7 @@ const GestionReservation = () => {
 
   const handleCustomizationSelect = (type) => {
     if (!newReservation.type_perso.includes(type)) {
-      setNewReservation((prev) => ({
+      setNewReservation(prev => ({
         ...prev,
         type_perso: [...prev.type_perso, type]
       }));
@@ -634,18 +781,24 @@ const GestionReservation = () => {
     setIsEditing(true);
   };
 
+  // Obtenir l'icône pour une fonctionnalité
+  const getFeatureIcon = (featureName) => {
+    const feature = featuresOptions.find(f => f.name === featureName);
+    return feature ? feature.icon : <Check size={12} />;
+  };
+
   return (
-    <div className="containergr">
+    <div className="gr-container">
       {/* En-tête */}
-      <header className="app-headergre">
-        <div className="app-titlegr">
-          <div className="app-icongr">
+      <header className="gr-app-header">
+        <div className="gr-app-title">
+          <div className="gr-app-icon">
             <Layers size={24} className="text-blue-500" />
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Gestion des Réservations</h1>
         </div>
         <button 
-          className="btnre btn-primary flex items-center" 
+          className="gr-btn gr-btn-primary flex items-center" 
           onClick={() => {
             resetForm();
             setShowModal(true);
@@ -657,8 +810,8 @@ const GestionReservation = () => {
       </header>
 
       {/* Barre de recherche et filtres */}
-      <div className="search-filter-container bg-white p-4 rounded-lg shadow-sm mb-6">
-        <div className="search-box relative">
+      <div className="gr-search-filter-container bg-white p-4 rounded-lg shadow-sm mb-6">
+        <div className="gr-search-box relative">
           <input
             type="text"
             placeholder="Rechercher des réservations..."
@@ -668,30 +821,30 @@ const GestionReservation = () => {
           />
           <Search size={16} className="absolute left-3 top-3 text-gray-400" />
         </div>
-        <div className="filter-buttons flex flex-wrap gap-2 mt-4">
+        <div className="gr-filter-buttons flex flex-wrap gap-2 mt-4">
           <button
-            className={`btnre btn-outline ${filter === 'all' ? 'active bg-blue-500 text-white' : ''} flex items-center`}
+            className={`gr-btn gr-btn-outline ${filter === 'all' ? 'active bg-blue-500 text-white' : ''} flex items-center`}
             onClick={() => setFilter('all')}
           >
             <Filter size={14} className="mr-1" />
             Toutes
           </button>
           <button
-            className={`btnre btn-outline ${filter === 'starter' ? 'active bg-purple-600 text-white' : ''} flex items-center`}
+            className={`gr-btn gr-btn-outline ${filter === 'starter' ? 'active bg-purple-600 text-white' : ''} flex items-center`}
             onClick={() => setFilter('starter')}
           >
             <BadgeCheck size={14} className="mr-1" />
             Starter
           </button>
           <button
-            className={`btnre btn-outline ${filter === 'pro' ? 'active bg-blue-600 text-white' : ''} flex items-center`}
+            className={`gr-btn gr-btn-outline ${filter === 'pro' ? 'active bg-blue-600 text-white' : ''} flex items-center`}
             onClick={() => setFilter('pro')}
           >
             <BadgePercent size={14} className="mr-1" />
             Pro
           </button>
           <button
-            className={`btnre btn-outline ${filter === 'enterprise' ? 'active bg-gray-600 text-white' : ''} flex items-center`}
+            className={`gr-btn gr-btn-outline ${filter === 'enterprise' ? 'active bg-gray-600 text-white' : ''} flex items-center`}
             onClick={() => setFilter('enterprise')}
           >
             <Settings size={14} className="mr-1" />
@@ -701,28 +854,25 @@ const GestionReservation = () => {
       </div>
 
       {/* Tableau des réservations */}
-      <div className="reservations-container bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="reservations-header p-4 border-b border-gray-200 flex justify-between items-center">
-          <div className="reservations-count text-gray-600">
+      <div className="gr-reservations-container bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="gr-reservations-header p-4 border-b border-gray-200 flex justify-between items-center">
+          <div className="gr-reservations-count text-gray-600">
             {filteredReservations.length}{' '}
             {filteredReservations.length === 1 ? 'réservation trouvée' : 'réservations trouvées'}
           </div>
         </div>
         {filteredReservations.length > 0 ? (
-          <div className="table-responsive overflow-x-auto">
-            <table className="reservations-table w-full">
+          <div className="gr-table-responsive overflow-x-auto">
+            <table className="gr-reservations-table w-full">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Formule</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perso.</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entreprise</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Personnalisation</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Durée</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fonctionnalités</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut/Paiement</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -730,62 +880,67 @@ const GestionReservation = () => {
                 {filteredReservations.map((reservation) => (
                   <tr key={reservation.id_reservation} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`badge ${getBadgeClass(reservation.formule)} inline-flex items-center`}>
+                      <span className={`gr-badge ${getBadgeClass(reservation.formule)} inline-flex items-center`}>
                         {reservation.formule === 'Starter' && <BadgeCheck size={14} className="mr-1" />}
                         {reservation.formule === 'Pro' && <BadgePercent size={14} className="mr-1" />}
                         {reservation.formule === 'Enterprise' && <Settings size={14} className="mr-1" />}
                         {reservation.formule || 'Non spécifié'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {reservation.prix || '0'} €
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {reservation.prix_perso || '0'} €
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <User size={16} className="text-gray-400 mr-2" />
-                        <span>{reservation.nom_complet || '-'}</span>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <div className="font-medium text-gray-900">{reservation.nom_complet || '-'}</div>
+                        <div className="text-sm text-gray-500">{reservation.entreprise || '-'}</div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <Briefcase size={16} className="text-gray-400 mr-2" />
-                        <span>{reservation.entreprise || '-'}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <a href={`mailto:${reservation.email}`} className="email-link flex items-center">
-                        <Mail size={16} className="text-gray-400 mr-2" />
-                        {reservation.email || '-'}
-                      </a>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="tags-container flex flex-wrap gap-1">
-                        {reservation.type_perso && reservation.type_perso.length > 0 ? (
-                          reservation.type_perso.map((type, index) => (
-                            <span key={index} className="tag bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
-                              <Circle size={8} className="mr-1 text-blue-500" />
-                              {type}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="no-data text-gray-400">-</span>
+                      <div className="flex flex-col">
+                        <a href={`mailto:${reservation.email}`} className="text-blue-600 hover:text-blue-800">
+                          {reservation.email || '-'}
+                        </a>
+                        {reservation.telephone && (
+                          <div className="text-sm text-gray-500 mt-1">{reservation.telephone}</div>
                         )}
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <div>
+                          {reservation.date ? 
+                            new Date(reservation.date).toLocaleDateString('fr-FR') : '-'}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {reservation.duree || '1 mois'}
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-6 py-4">
-                      <div className="tags-container flex flex-wrap gap-1">
+                      <div className="gr-features-compact">
                         {reservation.fonctionnalite && reservation.fonctionnalite.length > 0 ? (
-                          reservation.fonctionnalite.map((feature, index) => (
-                            <span key={index} className="tag bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
-                              <Check size={8} className="mr-1 text-green-500" />
-                              {feature}
-                            </span>
-                          ))
+                          <>
+                            <div className="gr-features-icons">
+                              {reservation.fonctionnalite.slice(0, 3).map((feature, index) => (
+                                <span key={index} className="gr-feature-icon" title={feature}>
+                                  {getFeatureIcon(feature)}
+                                </span>
+                              ))}
+                              {reservation.fonctionnalite.length > 3 && (
+                                <span className="gr-feature-more" title={reservation.fonctionnalite.slice(3).join(', ')}>
+                                  +{reservation.fonctionnalite.length - 3}
+                                </span>
+                              )}
+                            </div>
+                            <div className="gr-features-tooltip">
+                              {reservation.fonctionnalite.map((feature, index) => (
+                                <div key={index} className="gr-feature-item">
+                                  {getFeatureIcon(feature)}
+                                  <span>{feature}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </>
                         ) : (
-                          <span className="no-data text-gray-400">-</span>
+                          <span className="gr-no-data text-gray-400">-</span>
                         )}
                       </div>
                     </td>
@@ -793,21 +948,28 @@ const GestionReservation = () => {
                       {calculateTotal(reservation)} €
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`statut ${getStatutClass(reservation.statut)} px-2 py-1 rounded-full text-xs`}>
-                        {reservation.statut || 'en_attente'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`gr-statut ${getStatutClass(reservation.statut)} px-2 py-1 rounded-full text-xs text-center`}>
+                          {reservation.statut || 'en_attente'}
+                        </span>
+                        {reservation.paiement && (
+                          <span className={`gr-paiement ${getPaiementClass(reservation.paiement)} px-2 py-1 rounded-full text-xs text-center`}>
+                            {reservation.paiement}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="action-buttons flex space-x-2">
+                      <div className="gr-action-buttons flex space-x-2">
                         <button
-                          className="btn btn-view text-blue-600 hover:text-blue-900"
+                          className="gr-btn gr-btn-view text-blue-600 hover:text-blue-900"
                           onClick={() => viewReservation(reservation)}
                           title="Voir les détails"
                         >
                           <Eye size={16} />
                         </button>
                         <button
-                          className="btn btn-delete text-red-600 hover:text-red-900"
+                          className="gr-btn gr-btn-delete text-red-600 hover:text-red-900"
                           onClick={() => handleDeleteReservation(reservation.id_reservation)}
                           title="Supprimer"
                         >
@@ -821,14 +983,14 @@ const GestionReservation = () => {
             </table>
           </div>
         ) : (
-          <div className="empty-state p-8 text-center">
-            <div className="empty-state-icon mx-auto mb-4 text-gray-400">
+          <div className="gr-empty-state p-8 text-center">
+            <div className="gr-empty-state-icon mx-auto mb-4 text-gray-400">
               <Layers size={48} strokeWidth={1.5} />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune réservation trouvée</h3>
             <p className="text-gray-500 mb-6">Essayez de modifier vos critères de recherche ou ajoutez une nouvelle réservation</p>
             <button 
-              className="btn btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="gr-btn gr-btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               onClick={() => {
                 resetForm();
                 setShowModal(true);
@@ -843,23 +1005,23 @@ const GestionReservation = () => {
 
       {/* Modal d'ajout */}
       {showModal && (
-        <div className="modal-overlay active fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="modal bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto">
-            <div className="modal-header flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="gr-modal-overlay active fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="gr-modal bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto">
+            <div className="gr-modal-header flex justify-between items-center p-4 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 <Plus size={20} className="mr-2 text-blue-500" />
                 Nouvelle Réservation
               </h2>
               <button 
-                className="close-btn text-gray-400 hover:text-gray-500"
+                className="gr-close-btn text-gray-400 hover:text-gray-500"
                 onClick={() => setShowModal(false)}
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="modal-body p-6">
-              <div className="form-grid grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="form-group">
+            <div className="gr-modal-body p-6">
+              <div className="gr-form-grid grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="gr-form-group">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <Tag size={16} className="mr-2 text-blue-500" />
                     Formule *
@@ -877,7 +1039,7 @@ const GestionReservation = () => {
                     <option value="Enterprise">Enterprise</option>
                   </select>
                 </div>
-                <div className="form-group">
+                <div className="gr-form-group">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <DollarSign size={16} className="mr-2 text-blue-500" />
                     Prix *
@@ -893,7 +1055,7 @@ const GestionReservation = () => {
                     className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
                   />
                 </div>
-                <div className="form-group">
+                <div className="gr-form-group">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <DollarSign size={16} className="mr-2 text-blue-500" />
                     Prix Perso. *
@@ -909,7 +1071,7 @@ const GestionReservation = () => {
                     className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
                   />
                 </div>
-                <div className="form-group">
+                <div className="gr-form-group">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <User size={16} className="mr-2 text-blue-500" />
                     Nom complet *
@@ -923,7 +1085,7 @@ const GestionReservation = () => {
                     className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
                   />
                 </div>
-                <div className="form-group">
+                <div className="gr-form-group">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <Briefcase size={16} className="mr-2 text-blue-500" />
                     Entreprise *
@@ -937,7 +1099,7 @@ const GestionReservation = () => {
                     className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
                   />
                 </div>
-                <div className="form-group">
+                <div className="gr-form-group">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <Mail size={16} className="mr-2 text-blue-500" />
                     Email *
@@ -951,7 +1113,20 @@ const GestionReservation = () => {
                     className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
                   />
                 </div>
-                <div className="form-group">
+                <div className="gr-form-group">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Smartphone size={16} className="mr-2 text-blue-500" />
+                    Téléphone
+                  </label>
+                  <input
+                    type="tel"
+                    name="telephone"
+                    value={newReservation.telephone}
+                    onChange={handleInputChange}
+                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
+                  />
+                </div>
+                <div className="gr-form-group">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <Calendar size={16} className="mr-2 text-blue-500" />
                     Date *
@@ -965,7 +1140,44 @@ const GestionReservation = () => {
                     className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
                   />
                 </div>
-                <div className="form-group">
+                <div className="gr-form-group">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Clock size={16} className="mr-2 text-blue-500" />
+                    Durée *
+                  </label>
+                  <select
+                    name="duree"
+                    value={newReservation.duree}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                  >
+                    {dureeOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="gr-form-group">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <CreditCard size={16} className="mr-2 text-blue-500" />
+                    Paiement *
+                  </label>
+                  <select
+                    name="paiement"
+                    value={newReservation.paiement}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                  >
+                    {paiementOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option === 'non_paye' ? 'Non payé' : 
+                         option === 'partiel' ? 'Partiel' : 'Payé'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="gr-form-group">
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <CheckCircle size={16} className="mr-2 text-blue-500" />
                     Statut *
@@ -977,25 +1189,40 @@ const GestionReservation = () => {
                     required
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
                   >
-                    <option value="en_attente">En attente</option>
-                    <option value="signé">Signé</option>
-                    <option value="perdu">Perdu</option>
+                    {statutOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option === 'en_attente' ? 'En attente' : 
+                         option === 'en_cours' ? 'En cours' : 
+                         option.charAt(0).toUpperCase() + option.slice(1)}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
               
-              <div className="form-group mb-6">
+              <div className="gr-form-group mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes supplémentaires</label>
+                <textarea
+                  name="notes"
+                  value={newReservation.notes}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2"
+                />
+              </div>
+              
+              <div className="gr-form-group mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Types de Personnalisation</label>
-                <div className="multiselect relative">
+                <div className="gr-multiselect relative">
                   <div
-                    className="multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text"
+                    className="gr-multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text"
                     onClick={() => setShowCustomizationsDropdown(!showCustomizationsDropdown)}
                   >
                     {newReservation.type_perso.map((type) => (
-                      <span key={type} className="tag bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
+                      <span key={type} className="gr-tag bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
                         {type}
                         <span
-                          className="tag-remove ml-1 cursor-pointer hover:text-blue-600"
+                          className="gr-tag-remove ml-1 cursor-pointer hover:text-blue-600"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleRemoveCustomizationType(type);
@@ -1018,7 +1245,7 @@ const GestionReservation = () => {
                       className="flex-grow min-w-[200px] p-1 border-none focus:outline-none"
                     />
                     <button 
-                      className="dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
+                      className="gr-dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowCustomizationsDropdown(!showCustomizationsDropdown);
@@ -1028,7 +1255,7 @@ const GestionReservation = () => {
                     </button>
                   </div>
                   {showCustomizationsDropdown && (
-                    <div className="multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div className="gr-multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                       {customizationsOptions
                         .filter(
                           (option) =>
@@ -1038,7 +1265,7 @@ const GestionReservation = () => {
                         .map((option) => (
                           <div
                             key={option}
-                            className="multiselect-option p-2 hover:bg-blue-50 cursor-pointer flex items-center"
+                            className="gr-multiselect-option p-2 hover:bg-blue-50 cursor-pointer flex items-center"
                             onClick={() => handleCustomizationSelect(option)}
                           >
                             <Circle size={8} className="mr-2 text-blue-500" />
@@ -1049,18 +1276,19 @@ const GestionReservation = () => {
                   )}
                 </div>
               </div>
-              <div className="form-group">
+              <div className="gr-form-group">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Fonctionnalités Incluses</label>
-                <div className="multiselect relative">
+                <div className="gr-multiselect relative">
                   <div
-                    className="multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text"
+                    className="gr-multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text"
                     onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
                   >
                     {newReservation.fonctionnalite.map((feature) => (
-                      <span key={feature} className="tag bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
-                        {feature}
+                      <span key={feature} className="gr-tag bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
+                        {featuresOptions.find(f => f.name === feature)?.icon || <Check size={12} />}
+                        <span className="ml-1">{feature}</span>
                         <span
-                          className="tag-remove ml-1 cursor-pointer hover:text-green-600"
+                          className="gr-tag-remove ml-1 cursor-pointer hover:text-green-600"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleRemoveFeature(feature);
@@ -1083,7 +1311,7 @@ const GestionReservation = () => {
                       className="flex-grow min-w-[200px] p-1 border-none focus:outline-none"
                     />
                     <button 
-                      className="dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
+                      className="gr-dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowFeaturesDropdown(!showFeaturesDropdown);
@@ -1093,21 +1321,21 @@ const GestionReservation = () => {
                     </button>
                   </div>
                   {showFeaturesDropdown && (
-                    <div className="multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div className="gr-multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                       {featuresOptions
                         .filter(
                           (option) =>
-                            option.toLowerCase().includes(currentFeature.toLowerCase()) &&
-                            !newReservation.fonctionnalite.includes(option)
+                            option.name.toLowerCase().includes(currentFeature.toLowerCase()) &&
+                            !newReservation.fonctionnalite.includes(option.name)
                         )
                         .map((option) => (
                           <div
-                            key={option}
-                            className="multiselect-option p-2 hover:bg-green-50 cursor-pointer flex items-center"
-                            onClick={() => handleFeatureSelect(option)}
+                            key={option.name}
+                            className="gr-multiselect-option p-2 hover:bg-green-50 cursor-pointer flex items-center"
+                            onClick={() => handleFeatureSelect(option.name)}
                           >
-                            <Check size={8} className="mr-2 text-green-500" />
-                            {option}
+                            {option.icon}
+                            <span className="ml-2">{option.name}</span>
                           </div>
                         ))}
                     </div>
@@ -1115,16 +1343,16 @@ const GestionReservation = () => {
                 </div>
               </div>
             </div>
-            <div className="form-footer p-4 border-t border-gray-200 flex justify-end space-x-3">
+            <div className="gr-form-footer p-4 border-t border-gray-200 flex justify-end space-x-3">
               <button 
-                className="btn btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+                className="gr-btn gr-btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
                 onClick={() => setShowModal(false)}
               >
                 <X size={16} className="mr-2" />
                 Annuler
               </button>
               <button
-                className="btn btn-primary px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+                className="gr-btn gr-btn-primary px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
                 onClick={handleAddReservation}
                 disabled={
                   !newReservation.formule ||
@@ -1134,7 +1362,9 @@ const GestionReservation = () => {
                   !newReservation.entreprise ||
                   !newReservation.email ||
                   !newReservation.date ||
-                  !newReservation.statut
+                  !newReservation.statut ||
+                  !newReservation.duree ||
+                  !newReservation.paiement
                 }
               >
                 <CheckCircle size={16} className="mr-2" />
@@ -1147,9 +1377,9 @@ const GestionReservation = () => {
 
       {/* Modal de visualisation / modification */}
       {showViewModal && currentReservation && (
-        <div className="modal-overlay active fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="modal bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
-            <div className="modal-header flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="gr-modal-overlay active fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="gr-modal bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
+            <div className="gr-modal-header flex justify-between items-center p-4 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 {isEditing ? (
                   <Edit size={20} className="mr-2 text-blue-500" />
@@ -1159,21 +1389,21 @@ const GestionReservation = () => {
                 Détails de la Réservation
               </h2>
               <button 
-                className="close-btn text-gray-400 hover:text-gray-500"
+                className="gr-close-btn text-gray-400 hover:text-gray-500"
                 onClick={() => setShowViewModal(false)}
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="modal-body p-6">
-              <div className="invoice-container bg-white p-8 rounded-lg" id="invoice-print">
-                <div className="invoice-header flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
+            <div className="gr-modal-body p-6">
+              <div className="gr-invoice-container bg-white p-8 rounded-lg" id="invoice-print">
+                <div className="gr-invoice-header flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
                   <div>
-                    <div className="invoice-title text-2xl font-bold text-gray-800">Facture</div>
-                    <div className="invoice-number text-sm text-gray-500 mt-1">
+                    <div className="gr-invoice-title text-2xl font-bold text-gray-800">Facture</div>
+                    <div className="gr-invoice-number text-sm text-gray-500 mt-1">
                       Réservation #{currentReservation.id_reservation}
                     </div>
-                    <div className="invoice-date text-sm text-gray-500 mt-1">
+                    <div className="gr-invoice-date text-sm text-gray-500 mt-1">
                       Date: {currentReservation.date ? 
                         new Date(currentReservation.date).toLocaleDateString('fr-FR', {
                           year: 'numeric',
@@ -1182,59 +1412,73 @@ const GestionReservation = () => {
                         }) : '-'}
                     </div>
                   </div>
-                  <div className="invoice-logo text-xl font-bold text-blue-500 flex items-center">
+                  <div className="gr-invoice-logo text-xl font-bold text-blue-500 flex items-center">
                     <span className="w-6 h-6 bg-blue-500 rounded-full mr-2"></span>
                     B2B Réservations
                   </div>
                 </div>
-                <div className="invoice-details flex flex-col md:flex-row gap-6 mb-8">
-                  <div className="invoice-section bg-gray-50 p-4 rounded-lg flex-1">
+                <div className="gr-invoice-details flex flex-col md:flex-row gap-6 mb-8">
+                  <div className="gr-invoice-section bg-gray-50 p-4 rounded-lg flex-1">
                     <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
                       Client
                     </h3>
                     {isEditing ? (
                       <>
-                        <div className="form-group mb-3">
+                        <div className="gr-form-group mb-3">
                           <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
                           <input
                             type="text"
                             name="nom_complet"
                             value={currentReservation.nom_complet}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
                           />
                         </div>
-                        <div className="form-group mb-3">
+                        <div className="gr-form-group mb-3">
                           <label className="block text-sm font-medium text-gray-700 mb-1">Entreprise</label>
                           <input
                             type="text"
                             name="entreprise"
                             value={currentReservation.entreprise}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
                           />
                         </div>
-                        <div className="form-group mb-3">
+                        <div className="gr-form-group mb-3">
                           <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                           <input
                             type="email"
                             name="email"
                             value={currentReservation.email}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
                           />
                         </div>
-                        <div className="form-group">
+                        <div className="gr-form-group mb-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                          <input
+                            type="tel"
+                            name="telephone"
+                            value={currentReservation.telephone}
+                            onChange={handleEditInputChange}
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
+                          />
+                        </div>
+                        <div className="gr-form-group">
                           <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
                           <select
                             name="statut"
                             value={currentReservation.statut}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
                           >
-                            <option value="en_attente">En attente</option>
-                            <option value="signé">Signé</option>
-                            <option value="perdu">Perdu</option>
+                            {statutOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option === 'en_attente' ? 'En attente' : 
+                                 option === 'en_cours' ? 'En cours' : 
+                                 option.charAt(0).toUpperCase() + option.slice(1)}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </>
@@ -1243,53 +1487,87 @@ const GestionReservation = () => {
                         <p className="mb-2"><strong className="text-gray-700">Nom:</strong> {currentReservation.nom_complet || '-'}</p>
                         <p className="mb-2"><strong className="text-gray-700">Entreprise:</strong> {currentReservation.entreprise || '-'}</p>
                         <p className="mb-2"><strong className="text-gray-700">Email:</strong> {currentReservation.email || '-'}</p>
+                        {currentReservation.telephone && (
+                          <p className="mb-2"><strong className="text-gray-700">Téléphone:</strong> {currentReservation.telephone}</p>
+                        )}
                         <p><strong className="text-gray-700">Statut:</strong> 
-                          <span className={`statut ${getStatutClass(currentReservation.statut)} ml-2 px-2 py-1 rounded-full text-xs`}>
-                            {currentReservation.statut || 'en_attente'}
+                          <span className={`gr-statut ${getStatutClass(currentReservation.statut)} ml-2 px-2 py-1 rounded-full text-xs`}>
+                            {currentReservation.statut === 'en_attente' ? 'En attente' : 
+                             currentReservation.statut === 'en_cours' ? 'En cours' : 
+                             currentReservation.statut || 'en_attente'}
                           </span>
                         </p>
                       </>
                     )}
                   </div>
-                  <div className="invoice-section bg-gray-50 p-4 rounded-lg flex-1">
+                  <div className="gr-invoice-section bg-gray-50 p-4 rounded-lg flex-1">
                     <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
                       Réservation
                     </h3>
                     {isEditing ? (
                       <>
-                        <div className="form-group mb-3">
+                        <div className="gr-form-group mb-3">
                           <label className="block text-sm font-medium text-gray-700 mb-1">Formule</label>
                           <select
                             name="formule"
                             value={currentReservation.formule}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
                           >
                             <option value="Starter">Starter</option>
                             <option value="Pro">Pro</option>
                             <option value="Enterprise">Enterprise</option>
                           </select>
                         </div>
-                        <div className="form-group">
+                        <div className="gr-form-group mb-3">
                           <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                           <input
                             type="date"
                             name="date"
                             value={currentReservation.date}
                             onChange={handleEditInputChange}
-                            className="edit-input w-full p-2 border border-gray-300 rounded-md"
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
                           />
+                        </div>
+                        <div className="gr-form-group mb-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Durée</label>
+                          <select
+                            name="duree"
+                            value={currentReservation.duree}
+                            onChange={handleEditInputChange}
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
+                          >
+                            {dureeOptions.map((option) => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="gr-form-group">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Paiement</label>
+                          <select
+                            name="paiement"
+                            value={currentReservation.paiement}
+                            onChange={handleEditInputChange}
+                            className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
+                          >
+                            {paiementOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option === 'non_paye' ? 'Non payé' : 
+                                 option === 'partiel' ? 'Partiel' : 'Payé'}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       </>
                     ) : (
                       <>
                         <p className="mb-2">
                           <strong className="text-gray-700">Formule:</strong> 
-                          <span className={`badge ${getBadgeClass(currentReservation.formule)} ml-2`}>
+                          <span className={`gr-badge ${getBadgeClass(currentReservation.formule)} ml-2`}>
                             {currentReservation.formule || '-'}
                           </span>
                         </p>
-                        <p>
+                        <p className="mb-2">
                           <strong className="text-gray-700">Date:</strong> {currentReservation.date ? 
                             new Date(currentReservation.date).toLocaleDateString('fr-FR', {
                               year: 'numeric',
@@ -1297,22 +1575,53 @@ const GestionReservation = () => {
                               day: 'numeric'
                             }) : '-'}
                         </p>
+                        <p className="mb-2">
+                          <strong className="text-gray-700">Durée:</strong> {currentReservation.duree || '1 mois'}
+                        </p>
+                        <p>
+                          <strong className="text-gray-700">Paiement:</strong> 
+                          <span className={`gr-paiement ${getPaiementClass(currentReservation.paiement)} ml-2 px-2 py-1 rounded-full text-xs`}>
+                            {currentReservation.paiement === 'non_paye' ? 'Non payé' : 
+                             currentReservation.paiement === 'partiel' ? 'Partiel' : 
+                             currentReservation.paiement || 'Non payé'}
+                          </span>
+                        </p>
                       </>
                     )}
                   </div>
                 </div>
-                <div className="invoice-personnalisation bg-gray-50 p-4 rounded-lg mb-6">
+                
+                {currentReservation.notes && (
+                  <div className="gr-invoice-notes bg-gray-50 p-4 rounded-lg mb-6">
+                    <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
+                      Notes
+                    </h3>
+                    {isEditing ? (
+                      <textarea
+                        name="notes"
+                        value={currentReservation.notes}
+                        onChange={handleEditInputChange}
+                        rows={3}
+                        className="gr-edit-input w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    ) : (
+                      <p className="whitespace-pre-line">{currentReservation.notes}</p>
+                    )}
+                  </div>
+                )}
+                
+                <div className="gr-invoice-personnalisation bg-gray-50 p-4 rounded-lg mb-6">
                   <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
                     Types de Personnalisation
                   </h3>
                   {isEditing ? (
-                    <div className="multiselect relative">
-                      <div className="multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text">
+                    <div className="gr-multiselect relative">
+                      <div className="gr-multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text">
                         {currentReservation.type_perso.map((type) => (
-                          <span key={type} className="tag bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
+                          <span key={type} className="gr-tag bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
                             {type}
                             <span
-                              className="tag-remove ml-1 cursor-pointer hover:text-blue-600"
+                              className="gr-tag-remove ml-1 cursor-pointer hover:text-blue-600"
                               onClick={() => {
                                 setCurrentReservation(prev => ({
                                   ...prev,
@@ -1339,20 +1648,20 @@ const GestionReservation = () => {
                           className="flex-grow min-w-[200px] p-1 border-none focus:outline-none"
                         />
                         <button 
-                          className="dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
+                          className="gr-dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
                           onClick={() => setShowCustomizationsDropdown(!showCustomizationsDropdown)}
                         >
                           {showCustomizationsDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
                       </div>
                       {showCustomizationsDropdown && (
-                        <div className="multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                        <div className="gr-multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                           {customizationsOptions
                             .filter(option => !currentReservation.type_perso.includes(option))
                             .map((option) => (
                               <div
                                 key={option}
-                                className="multiselect-option p-2 hover:bg-blue-50 cursor-pointer flex items-center"
+                                className="gr-multiselect-option p-2 hover:bg-blue-50 cursor-pointer flex items-center"
                                 onClick={() => {
                                   setCurrentReservation(prev => ({
                                     ...prev,
@@ -1383,18 +1692,19 @@ const GestionReservation = () => {
                     </ul>
                   )}
                 </div>
-                <div className="invoice-features bg-gray-50 p-4 rounded-lg mb-6">
+                <div className="gr-invoice-features bg-gray-50 p-4 rounded-lg mb-6">
                   <h3 className="text-lg font-semibold text-blue-500 border-b border-blue-200 pb-2 mb-4">
                     Fonctionnalités Incluses
                   </h3>
                   {isEditing ? (
-                    <div className="multiselect relative">
-                      <div className="multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text">
+                    <div className="gr-multiselect relative">
+                      <div className="gr-multiselect-input flex flex-wrap items-center p-2 border border-gray-300 rounded-md cursor-text">
                         {currentReservation.fonctionnalite.map((feature) => (
-                          <span key={feature} className="tag bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
-                            {feature}
+                          <span key={feature} className="gr-tag bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full m-1 flex items-center">
+                            {featuresOptions.find(f => f.name === feature)?.icon || <Check size={12} />}
+                            <span className="ml-1">{feature}</span>
                             <span
-                              className="tag-remove ml-1 cursor-pointer hover:text-green-600"
+                              className="gr-tag-remove ml-1 cursor-pointer hover:text-green-600"
                               onClick={() => {
                                 setCurrentReservation(prev => ({
                                   ...prev,
@@ -1421,30 +1731,30 @@ const GestionReservation = () => {
                           className="flex-grow min-w-[200px] p-1 border-none focus:outline-none"
                         />
                         <button 
-                          className="dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
+                          className="gr-dropdown-toggle ml-2 text-gray-500 hover:text-gray-700"
                           onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
                         >
                           {showFeaturesDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
                       </div>
                       {showFeaturesDropdown && (
-                        <div className="multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                        <div className="gr-multiselect-options active absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                           {featuresOptions
-                            .filter(option => !currentReservation.fonctionnalite.includes(option))
+                            .filter(option => !currentReservation.fonctionnalite.includes(option.name))
                             .map((option) => (
                               <div
-                                key={option}
-                                className="multiselect-option p-2 hover:bg-green-50 cursor-pointer flex items-center"
+                                key={option.name}
+                                className="gr-multiselect-option p-2 hover:bg-green-50 cursor-pointer flex items-center"
                                 onClick={() => {
                                   setCurrentReservation(prev => ({
                                     ...prev,
-                                    fonctionnalite: [...prev.fonctionnalite, option]
+                                    fonctionnalite: [...prev.fonctionnalite, option.name]
                                   }));
                                   setShowFeaturesDropdown(false);
                                 }}
                               >
-                                <Check size={8} className="mr-2 text-green-500" />
-                                {option}
+                                {option.icon}
+                                <span className="ml-2">{option.name}</span>
                               </div>
                             ))}
                         </div>
@@ -1455,8 +1765,8 @@ const GestionReservation = () => {
                       {currentReservation.fonctionnalite && currentReservation.fonctionnalite.length > 0 ? (
                         currentReservation.fonctionnalite.map((feature, idx) => (
                           <li key={idx} className="flex items-center py-2">
-                            <Check size={8} className="mr-2 text-green-500" />
-                            {feature}
+                            {featuresOptions.find(f => f.name === feature)?.icon || <Check size={12} />}
+                            <span className="ml-2">{feature}</span>
                           </li>
                         ))
                       ) : (
@@ -1465,13 +1775,13 @@ const GestionReservation = () => {
                     </ul>
                   )}
                 </div>
-                <div className="invoice-total bg-gradient-to-r from-blue-500 to-gray-800 p-6 rounded-lg mb-6 text-white">
+                <div className="gr-invoice-total bg-gradient-to-r from-blue-500 to-gray-800 p-6 rounded-lg mb-6 text-white">
                   <h3 className="text-xl font-semibold border-b border-white border-opacity-20 pb-2 mb-4">
                     Détail du prix
                   </h3>
                   {isEditing ? (
                     <>
-                      <div className="price-edit mb-3">
+                      <div className="gr-price-edit mb-3">
                         <label className="block mb-1">Prix de base:</label>
                         <div className="flex items-center">
                           <input
@@ -1486,7 +1796,7 @@ const GestionReservation = () => {
                           <span className="ml-2">€</span>
                         </div>
                       </div>
-                      <div className="price-edit">
+                      <div className="gr-price-edit">
                         <label className="block mb-1">Prix personnalisation:</label>
                         <div className="flex items-center">
                           <input
@@ -1504,46 +1814,46 @@ const GestionReservation = () => {
                     </>
                   ) : (
                     <>
-                      <div className="price-row mb-2">
-                        <span className="price-label">Prix de base:</span>
-                        <span className="price-value">{currentReservation.prix || '0'} €</span>
+                      <div className="gr-price-row mb-2">
+                        <span className="gr-price-label">Prix de base:</span>
+                        <span className="gr-price-value">{currentReservation.prix || '0'} €</span>
                       </div>
-                      <div className="price-row mb-2">
-                        <span className="price-label">Prix personnalisation:</span>
-                        <span className="price-value">{currentReservation.prix_perso || '0'} €</span>
+                      <div className="gr-price-row mb-2">
+                        <span className="gr-price-label">Prix personnalisation:</span>
+                        <span className="gr-price-value">{currentReservation.prix_perso || '0'} €</span>
                       </div>
                     </>
                   )}
-                  <div className="price-row total-amount mt-4 text-xl font-bold">
+                  <div className="gr-price-row gr-total-amount mt-4 text-xl font-bold">
                     <span>Total:</span>
                     <span>{calculateTotal(currentReservation)} €</span>
                   </div>
                 </div>
-                <div className="invoice-footer text-center text-gray-500 text-sm pt-4 border-t border-gray-200">
+                <div className="gr-invoice-footer text-center text-gray-500 text-sm pt-4 border-t border-gray-200">
                   <p>Merci pour votre confiance !</p>
                   <p>B2B Réservations - contact@b2b-reservations.com</p>
                 </div>
               </div>
             </div>
-            <div className="form-footer p-4 border-t border-gray-200 flex justify-end space-x-3">
+            <div className="gr-form-footer p-4 border-t border-gray-200 flex justify-end space-x-3">
               {!isEditing ? (
                 <>
                   <button
-                    className="btn btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
+                    className="gr-btn gr-btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
                     onClick={() => setShowViewModal(false)}
                   >
                     <X size={16} className="mr-2" />
                     Fermer
                   </button>
                   <button 
-                    className="btn btn-primary px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
+                    className="gr-btn gr-btn-primary px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
                     onClick={printInvoice}
                   >
                     <Printer size={16} className="mr-2" />
                     Imprimer
                   </button>
                   <button
-                    className="btn btn-success px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center no-print"
+                    className="gr-btn gr-btn-success px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center no-print"
                     onClick={enableEditing}
                   >
                     <Edit size={16} className="mr-2" />
@@ -1553,14 +1863,14 @@ const GestionReservation = () => {
               ) : (
                 <>
                   <button
-                    className="btn btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
+                    className="gr-btn gr-btn-outline px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center no-print"
                     onClick={() => setIsEditing(false)}
                   >
                     <X size={16} className="mr-2" />
                     Annuler
                   </button>
                   <button
-                    className="btn btn-success px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center no-print"
+                    className="gr-btn gr-btn-success px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center no-print"
                     onClick={handleUpdateReservation}
                   >
                     <CheckCircle size={16} className="mr-2" />

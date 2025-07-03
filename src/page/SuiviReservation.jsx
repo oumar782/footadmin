@@ -774,993 +774,995 @@ const GestionReservation = () => {
   };
 
   return (
-    <div className="gestion-reservation-container">
-      {/* En-tête */}
-      <header className="gestion-reservation-header">
-        <div className="gestion-reservation-title">
-          <div className="gestion-reservation-icon">
-            <Layers size={24} />
+    <div className="global-container">
+      <div className="gestion-reservation-container">
+        {/* En-tête */}
+        <header className="gestion-reservation-header">
+          <div className="gestion-reservation-title">
+            <div className="gestion-reservation-icon">
+              <Layers size={24} />
+            </div>
+            <h1>Gestion des Réservations</h1>
           </div>
-          <h1>Gestion des Réservations</h1>
-        </div>
-        <button 
-          className="filter-btn filter-btn-primary" 
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-        >
-          <Plus size={16} className="mr-2" />
-          Nouvelle Réservation
-        </button>
-      </header>
+          <button 
+            className="filter-btn filter-btn-primary" 
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+          >
+            <Plus size={16} className="mr-2" />
+            Nouvelle Réservation
+          </button>
+        </header>
 
-      {/* Cartes de statistiques */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon bg-blue-100 text-blue-600">
-            <Layers size={24} />
+        {/* Cartes de statistiques */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-icon bg-blue-100 text-blue-600">
+              <Layers size={24} />
+            </div>
+            <div>
+              <h3>Total Réservations</h3>
+              <p>{stats.total}</p>
+            </div>
           </div>
-          <div>
-            <h3>Total Réservations</h3>
-            <p>{stats.total}</p>
-          </div>
-        </div>
 
-        <div className="stat-card">
-          <div className="stat-icon bg-green-100 text-green-600">
-            <TrendingUp size={24} />
+          <div className="stat-card">
+            <div className="stat-icon bg-green-100 text-green-600">
+              <TrendingUp size={24} />
+            </div>
+            <div>
+              <h3>Chiffre d'affaires</h3>
+              <p>{stats.chiffreAffaire.toFixed(2)} €</p>
+              <div className="text-xs text-gray-500 mt-1">Signé seulement</div>
+            </div>
           </div>
-          <div>
-            <h3>Chiffre d'affaires</h3>
-            <p>{stats.chiffreAffaire.toFixed(2)} €</p>
-            <div className="text-xs text-gray-500 mt-1">Signé seulement</div>
-          </div>
-        </div>
 
-        <div className="stat-card">
-          <div className="stat-icon bg-purple-100 text-purple-600">
-            <BadgeCheck size={24} />
+          <div className="stat-card">
+            <div className="stat-icon bg-purple-100 text-purple-600">
+              <BadgeCheck size={24} />
+            </div>
+            <div>
+              <h3>Formules</h3>
+              <div className="flex flex-wrap gap-2 mt-1">
+                <span className="badge-premium">
+                  <BadgeCheck size={12} className="mr-1" />
+                  Starter: {stats.starter}
+                </span>
+                <span className="badge-standard">
+                  <BadgePercent size={12} className="mr-1" />
+                  Pro: {stats.pro}
+                </span>
+                <span className="badge-enterprise">
+                  <Settings size={12} className="mr-1" />
+                  Enterprise: {stats.enterprise}
+                </span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3>Formules</h3>
-            <div className="flex flex-wrap gap-2 mt-1">
-              <span className="badge-premium">
-                <BadgeCheck size={12} className="mr-1" />
-                Starter: {stats.starter}
-              </span>
-              <span className="badge-standard">
-                <BadgePercent size={12} className="mr-1" />
-                Pro: {stats.pro}
-              </span>
-              <span className="badge-enterprise">
-                <Settings size={12} className="mr-1" />
-                Enterprise: {stats.enterprise}
-              </span>
+
+          <div className="stat-card">
+            <div className="stat-icon bg-yellow-100 text-yellow-600">
+              <Clock size={24} />
+            </div>
+            <div>
+              <h3>Statuts</h3>
+              <div className="flex flex-wrap gap-2 mt-1">
+                <span className="status-signed">
+                  Signé: {stats.signe}
+                </span>
+                <span className="status-lost">
+                  Perdu: {stats.perdu}
+                </span>
+                <span className="status-pending">
+                  En attente: {stats.en_attente}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon bg-yellow-100 text-yellow-600">
-            <Clock size={24} />
+        {/* Barre de recherche et filtres */}
+        <div className="search-filter-container">
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Rechercher des réservations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search size={16} className="search-icon" />
           </div>
-          <div>
-            <h3>Statuts</h3>
-            <div className="flex flex-wrap gap-2 mt-1">
-              <span className="status-signed">
-                Signé: {stats.signe}
-              </span>
-              <span className="status-lost">
-                Perdu: {stats.perdu}
-              </span>
-              <span className="status-pending">
-                En attente: {stats.en_attente}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Barre de recherche et filtres */}
-      <div className="search-filter-container">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Rechercher des réservations..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Search size={16} className="search-icon" />
-        </div>
-        <div className="filter-buttons">
-          <button
-            className={`filter-btn filter-btn-outline ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >
-            <Filter size={14} className="mr-1" />
-            Toutes
-          </button>
-          <button
-            className={`filter-btn filter-btn-outline ${filter === 'starter' ? 'active' : ''}`}
-            onClick={() => setFilter('starter')}
-          >
-            <BadgeCheck size={14} className="mr-1" />
-            Starter
-          </button>
-          <button
-            className={`filter-btn filter-btn-outline ${filter === 'pro' ? 'active' : ''}`}
-            onClick={() => setFilter('pro')}
-          >
-            <BadgePercent size={14} className="mr-1" />
-            Pro
-          </button>
-          <button
-            className={`filter-btn filter-btn-outline ${filter === 'enterprise' ? 'active' : ''}`}
-            onClick={() => setFilter('enterprise')}
-          >
-            <Settings size={14} className="mr-1" />
-            Enterprise
-          </button>
-        </div>
-      </div>
-
-      {/* Tableau des réservations */}
-      <div className="reservations-container">
-        <div className="reservations-header">
-          <div className="reservations-count">
-            {filteredReservations.length}{' '}
-            {filteredReservations.length === 1 ? 'réservation trouvée' : 'réservations trouvées'}
-          </div>
-        </div>
-        {filteredReservations.length > 0 ? (
-          <div className="table-responsive">
-            <table className="reservations-table">
-              <thead>
-                <tr>
-                  <th>Formule</th>
-                  <th>Prix</th>
-                  <th>Perso.</th>
-                  <th>Client</th>
-                  <th>Entreprise</th>
-                  <th>Email</th>
-                  <th>Personnalisation</th>
-                  <th>Fonctionnalités</th>
-                  <th>Total</th>
-                  <th>Statut</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredReservations.map((reservation) => (
-                  <tr key={reservation.id_reservation}>
-                    <td>
-                      <span className={`badge ${getBadgeClass(reservation.formule)}`}>
-                        {reservation.formule === 'Starter' && <BadgeCheck size={14} className="mr-1" />}
-                        {reservation.formule === 'Pro' && <BadgePercent size={14} className="mr-1" />}
-                        {reservation.formule === 'Enterprise' && <Settings size={14} className="mr-1" />}
-                        {reservation.formule || 'Non spécifié'}
-                      </span>
-                    </td>
-                    <td>{reservation.prix || '0'} €</td>
-                    <td>{reservation.prix_perso || '0'} €</td>
-                    <td>
-                      <div className="client-info">
-                        <User size={16} className="mr-2" />
-                        <span>{reservation.nom_complet || '-'}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="client-info">
-                        <Briefcase size={16} className="mr-2" />
-                        <span>{reservation.entreprise || '-'}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href={`mailto:${reservation.email}`} className="email-link">
-                        <Mail size={16} className="mr-2" />
-                        {reservation.email || '-'}
-                      </a>
-                    </td>
-                    <td>
-                      <div className="tags-container">
-                        {reservation.type_perso && reservation.type_perso.length > 0 ? (
-                          reservation.type_perso.map((type, index) => (
-                            <span key={index} className="tag">
-                              <Circle size={8} className="mr-1" />
-                              {type}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="no-data">-</span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="tags-container">
-                        {reservation.fonctionnalite && reservation.fonctionnalite.length > 0 ? (
-                          reservation.fonctionnalite.map((feature, index) => (
-                            <span key={index} className="tag">
-                              <Check size={8} className="mr-1" />
-                              {feature}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="no-data">-</span>
-                        )}
-                      </div>
-                    </td>
-                    <td>{calculateTotal(reservation)} €</td>
-                    <td>
-                      <span className={`status ${getStatutClass(reservation.statut)}`}>
-                        {reservation.statut || 'en_attente'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          className="action-btn action-btn-view"
-                          onClick={() => viewReservation(reservation)}
-                          title="Voir les détails"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          className="action-btn action-btn-delete"
-                          onClick={() => handleDeleteReservation(reservation.id_reservation)}
-                          title="Supprimer"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="empty-state">
-            <div className="empty-state-icon">
-              <Layers size={48} strokeWidth={1.5} />
-            </div>
-            <h3>Aucune réservation trouvée</h3>
-            <p>Essayez de modifier vos critères de recherche ou ajoutez une nouvelle réservation</p>
-            <button 
-              className="filter-btn filter-btn-primary"
-              onClick={() => {
-                resetForm();
-                setShowModal(true);
-              }}
+          <div className="filter-buttons">
+            <button
+              className={`filter-btn filter-btn-outline ${filter === 'all' ? 'active' : ''}`}
+              onClick={() => setFilter('all')}
             >
-              <Plus size={16} className="mr-2" />
-              Ajouter une réservation
+              <Filter size={14} className="mr-1" />
+              Toutes
             </button>
+            <button
+              className={`filter-btn filter-btn-outline ${filter === 'starter' ? 'active' : ''}`}
+              onClick={() => setFilter('starter')}
+            >
+              <BadgeCheck size={14} className="mr-1" />
+              Starter
+            </button>
+            <button
+              className={`filter-btn filter-btn-outline ${filter === 'pro' ? 'active' : ''}`}
+              onClick={() => setFilter('pro')}
+            >
+              <BadgePercent size={14} className="mr-1" />
+              Pro
+            </button>
+            <button
+              className={`filter-btn filter-btn-outline ${filter === 'enterprise' ? 'active' : ''}`}
+              onClick={() => setFilter('enterprise')}
+            >
+              <Settings size={14} className="mr-1" />
+              Enterprise
+            </button>
+          </div>
+        </div>
+
+        {/* Tableau des réservations */}
+        <div className="reservations-container">
+          <div className="reservations-header">
+            <div className="reservations-count">
+              {filteredReservations.length}{' '}
+              {filteredReservations.length === 1 ? 'réservation trouvée' : 'réservations trouvées'}
+            </div>
+          </div>
+          {filteredReservations.length > 0 ? (
+            <div className="table-responsive">
+              <table className="reservations-table">
+                <thead>
+                  <tr>
+                    <th>Formule</th>
+                    <th>Prix</th>
+                    <th>Perso.</th>
+                    <th>Client</th>
+                    <th>Entreprise</th>
+                    <th>Email</th>
+                    <th>Personnalisation</th>
+                    <th>Fonctionnalités</th>
+                    <th>Total</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredReservations.map((reservation) => (
+                    <tr key={reservation.id_reservation}>
+                      <td>
+                        <span className={`badge ${getBadgeClass(reservation.formule)}`}>
+                          {reservation.formule === 'Starter' && <BadgeCheck size={14} className="mr-1" />}
+                          {reservation.formule === 'Pro' && <BadgePercent size={14} className="mr-1" />}
+                          {reservation.formule === 'Enterprise' && <Settings size={14} className="mr-1" />}
+                          {reservation.formule || 'Non spécifié'}
+                        </span>
+                      </td>
+                      <td>{reservation.prix || '0'} €</td>
+                      <td>{reservation.prix_perso || '0'} €</td>
+                      <td>
+                        <div className="client-info">
+                          <User size={16} className="mr-2" />
+                          <span>{reservation.nom_complet || '-'}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="client-info">
+                          <Briefcase size={16} className="mr-2" />
+                          <span>{reservation.entreprise || '-'}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <a href={`mailto:${reservation.email}`} className="email-link">
+                          <Mail size={16} className="mr-2" />
+                          {reservation.email || '-'}
+                        </a>
+                      </td>
+                      <td>
+                        <div className="tags-container">
+                          {reservation.type_perso && reservation.type_perso.length > 0 ? (
+                            reservation.type_perso.map((type, index) => (
+                              <span key={index} className="tag">
+                                <Circle size={8} className="mr-1" />
+                                {type}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="no-data">-</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="tags-container">
+                          {reservation.fonctionnalite && reservation.fonctionnalite.length > 0 ? (
+                            reservation.fonctionnalite.map((feature, index) => (
+                              <span key={index} className="tag">
+                                <Check size={8} className="mr-1" />
+                                {feature}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="no-data">-</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>{calculateTotal(reservation)} €</td>
+                      <td>
+                        <span className={`status ${getStatutClass(reservation.statut)}`}>
+                          {reservation.statut || 'en_attente'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="action-buttons">
+                          <button
+                            className="action-btn action-btn-view"
+                            onClick={() => viewReservation(reservation)}
+                            title="Voir les détails"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            className="action-btn action-btn-delete"
+                            onClick={() => handleDeleteReservation(reservation.id_reservation)}
+                            title="Supprimer"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <Layers size={48} strokeWidth={1.5} />
+              </div>
+              <h3>Aucune réservation trouvée</h3>
+              <p>Essayez de modifier vos critères de recherche ou ajoutez une nouvelle réservation</p>
+              <button 
+                className="filter-btn filter-btn-primary"
+                onClick={() => {
+                  resetForm();
+                  setShowModal(true);
+                }}
+              >
+                <Plus size={16} className="mr-2" />
+                Ajouter une réservation
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Modal d'ajout */}
+        {showModal && (
+          <div className="modal-overlay active">
+            <div className="modal">
+              <div className="modal-header">
+                <h2>
+                  <Plus size={20} className="mr-2" />
+                  Nouvelle Réservation
+                </h2>
+                <button 
+                  className="close-btn"
+                  onClick={() => setShowModal(false)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>
+                      <Tag size={16} className="mr-2" />
+                      Formule *
+                    </label>
+                    <select
+                      name="formule"
+                      value={newReservation.formule}
+                      onChange={handleInputChange}
+                      required
+                      className="form-control"
+                    >
+                      <option value="">Sélectionnez une formule</option>
+                      <option value="Starter">Starter</option>
+                      <option value="Pro">Pro</option>
+                      <option value="Enterprise">Enterprise</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <DollarSign size={16} className="mr-2" />
+                      Prix *
+                    </label>
+                    <input
+                      type="number"
+                      name="prix"
+                      value={newReservation.prix}
+                      onChange={handleInputChange}
+                      required
+                      min="0"
+                      step="0.01"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <DollarSign size={16} className="mr-2" />
+                      Prix Perso. *
+                    </label>
+                    <input
+                      type="number"
+                      name="prix_perso"
+                      value={newReservation.prix_perso}
+                      onChange={handleInputChange}
+                      required
+                      min="0"
+                      step="0.01"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <User size={16} className="mr-2" />
+                      Nom complet *
+                    </label>
+                    <input
+                      type="text"
+                      name="nom_complet"
+                      value={newReservation.nom_complet}
+                      onChange={handleInputChange}
+                      required
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <Briefcase size={16} className="mr-2" />
+                      Entreprise *
+                    </label>
+                    <input
+                      type="text"
+                      name="entreprise"
+                      value={newReservation.entreprise}
+                      onChange={handleInputChange}
+                      required
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <Mail size={16} className="mr-2" />
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={newReservation.email}
+                      onChange={handleInputChange}
+                      required
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <Calendar size={16} className="mr-2" />
+                      Date *
+                    </label>
+                    <input
+                      type="date"
+                      name="date"
+                      value={newReservation.date}
+                      onChange={handleInputChange}
+                      required
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <CheckCircle size={16} className="mr-2" />
+                      Statut *
+                    </label>
+                    <select
+                      name="statut"
+                      value={newReservation.statut}
+                      onChange={handleInputChange}
+                      required
+                      className="form-control"
+                    >
+                      <option value="en_attente">En attente</option>
+                      <option value="signé">Signé</option>
+                      <option value="perdu">Perdu</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label>Types de Personnalisation</label>
+                  <div className="multiselect">
+                    <div
+                      className="multiselect-input"
+                      onClick={() => setShowCustomizationsDropdown(!showCustomizationsDropdown)}
+                    >
+                      {newReservation.type_perso.map((type) => (
+                        <span key={type} className="tag">
+                          {type}
+                          <span
+                            className="tag-remove"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveCustomizationType(type);
+                            }}
+                          >
+                            <X size={12} />
+                          </span>
+                        </span>
+                      ))}
+                      <input
+                        type="text"
+                        placeholder="Ajouter un type de personnalisation"
+                        value={currentCustomization}
+                        onChange={(e) => setCurrentCustomization(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddCustomizationType()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCustomizationsDropdown(true);
+                        }}
+                        className="multiselect-input-field"
+                      />
+                      <button 
+                        className="dropdown-toggle"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCustomizationsDropdown(!showCustomizationsDropdown);
+                        }}
+                      >
+                        {showCustomizationsDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+                    </div>
+                    {showCustomizationsDropdown && (
+                      <div className="multiselect-options active">
+                        {customizationsOptions
+                          .filter(
+                            (option) =>
+                              option.toLowerCase().includes(currentCustomization.toLowerCase()) &&
+                              !newReservation.type_perso.includes(option)
+                          )
+                          .map((option) => (
+                            <div
+                              key={option}
+                              className="multiselect-option"
+                              onClick={() => handleCustomizationSelect(option)}
+                            >
+                              <Circle size={8} className="mr-2" />
+                              {option}
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Fonctionnalités Incluses</label>
+                  <div className="multiselect">
+                    <div
+                      className="multiselect-input"
+                      onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
+                    >
+                      {newReservation.fonctionnalite.map((feature) => (
+                        <span key={feature} className="tag">
+                          {feature}
+                          <span
+                            className="tag-remove"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveFeature(feature);
+                            }}
+                          >
+                            <X size={12} />
+                          </span>
+                        </span>
+                      ))}
+                      <input
+                        type="text"
+                        placeholder="Ajouter une fonctionnalité"
+                        value={currentFeature}
+                        onChange={(e) => setCurrentFeature(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowFeaturesDropdown(true);
+                        }}
+                        className="multiselect-input-field"
+                      />
+                      <button 
+                        className="dropdown-toggle"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowFeaturesDropdown(!showFeaturesDropdown);
+                        }}
+                      >
+                        {showFeaturesDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+                    </div>
+                    {showFeaturesDropdown && (
+                      <div className="multiselect-options active">
+                        {featuresOptions
+                          .filter(
+                            (option) =>
+                              option.toLowerCase().includes(currentFeature.toLowerCase()) &&
+                              !newReservation.fonctionnalite.includes(option)
+                          )
+                          .map((option) => (
+                            <div
+                              key={option}
+                              className="multiselect-option"
+                              onClick={() => handleFeatureSelect(option)}
+                            >
+                              <Check size={8} className="mr-2" />
+                              {option}
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  className="filter-btn filter-btn-outline"
+                  onClick={() => setShowModal(false)}
+                >
+                  <X size={16} className="mr-2" />
+                  Annuler
+                </button>
+                <button
+                  className="filter-btn filter-btn-primary"
+                  onClick={handleAddReservation}
+                  disabled={
+                    !newReservation.formule ||
+                    !newReservation.prix ||
+                    !newReservation.prix_perso ||
+                    !newReservation.nom_complet ||
+                    !newReservation.entreprise ||
+                    !newReservation.email ||
+                    !newReservation.date ||
+                    !newReservation.statut
+                  }
+                >
+                  <CheckCircle size={16} className="mr-2" />
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de visualisation / modification */}
+        {showViewModal && currentReservation && (
+          <div className="modal-overlay active">
+            <div className="modal">
+              <div className="modal-header">
+                <h2>
+                  {isEditing ? (
+                    <Edit size={20} className="mr-2" />
+                  ) : (
+                    <Eye size={20} className="mr-2" />
+                  )}
+                  Détails de la Réservation
+                </h2>
+                <button 
+                  className="close-btn"
+                  onClick={() => setShowViewModal(false)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body">
+              <div className="invoice-container" id="invoice-print">
+              <div className="invoice-header">
+                    <div>
+                      <div className="invoice-title">Facture</div>
+                      <div className="invoice-number">
+                        Réservation #{currentReservation.id_reservation}
+                      </div>
+                      <div className="invoice-date">
+                        Date: {currentReservation.date ? 
+                          new Date(currentReservation.date).toLocaleDateString('fr-FR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          }) : '-'}
+                      </div>
+                    </div>
+                    <div className="invoice-logo">
+                      <span className="w-6 h-6 bg-blue-500 rounded-full mr-2"></span>
+                      Footspace-solutions
+                    </div>
+                  </div>
+                  <div className="invoice-details">
+                    <div className="invoice-section">
+                      <h3>Client</h3>
+                      {isEditing ? (
+                        <>
+                          <div className="form-group">
+                            <label>Nom complet</label>
+                            <input
+                              type="text"
+                              name="nom_complet"
+                              value={currentReservation.nom_complet}
+                              onChange={handleEditInputChange}
+                              className="edit-input"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Entreprise</label>
+                            <input
+                              type="text"
+                              name="entreprise"
+                              value={currentReservation.entreprise}
+                              onChange={handleEditInputChange}
+                              className="edit-input"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Email</label>
+                            <input
+                              type="email"
+                              name="email"
+                              value={currentReservation.email}
+                              onChange={handleEditInputChange}
+                              className="edit-input"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Statut</label>
+                            <select
+                              name="statut"
+                              value={currentReservation.statut}
+                              onChange={handleEditInputChange}
+                              className="edit-input"
+                            >
+                              <option value="en_attente">En attente</option>
+                              <option value="signé">Signé</option>
+                              <option value="perdu">Perdu</option>
+                            </select>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <p><strong>Nom:</strong> {currentReservation.nom_complet || '-'}</p>
+                          <p><strong>Entreprise:</strong> {currentReservation.entreprise || '-'}</p>
+                          <p><strong>Email:</strong> {currentReservation.email || '-'}</p>
+                          <p><strong>Statut:</strong> 
+                            <span className={`status ${getStatutClass(currentReservation.statut)}`}>
+                              {currentReservation.statut || 'en_attente'}
+                            </span>
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <div className="invoice-section">
+                      <h3>Réservation</h3>
+                      {isEditing ? (
+                        <>
+                          <div className="form-group">
+                            <label>Formule</label>
+                            <select
+                              name="formule"
+                              value={currentReservation.formule}
+                              onChange={handleEditInputChange}
+                              className="edit-input"
+                            >
+                              <option value="Starter">Starter</option>
+                              <option value="Pro">Pro</option>
+                              <option value="Enterprise">Enterprise</option>
+                            </select>
+                          </div>
+                          <div className="form-group">
+                            <label>Date</label>
+                            <input
+                              type="date"
+                              name="date"
+                              value={currentReservation.date}
+                              onChange={handleEditInputChange}
+                              className="edit-input"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <p>
+                            <strong>Formule:</strong> 
+                            <span className={`badge ${getBadgeClass(currentReservation.formule)}`}>
+                              {currentReservation.formule || '-'}
+                            </span>
+                          </p>
+                          <p>
+                            <strong>Date:</strong> {currentReservation.date ? 
+                              new Date(currentReservation.date).toLocaleDateString('fr-FR', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              }) : '-'}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="invoice-personnalisation">
+                    <h3>Types de Personnalisation</h3>
+                    {isEditing ? (
+                      <div className="multiselect">
+                        <div className="multiselect-input">
+                          {currentReservation.type_perso.map((type) => (
+                            <span key={type} className="tag">
+                              {type}
+                              <span
+                                className="tag-remove"
+                                onClick={() => {
+                                  setCurrentReservation(prev => ({
+                                    ...prev,
+                                    type_perso: prev.type_perso.filter(t => t !== type)
+                                  }));
+                                }}
+                              >
+                                <X size={12} />
+                              </span>
+                            </span>
+                          ))}
+                          <input
+                            type="text"
+                            placeholder="Ajouter un type"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && e.target.value) {
+                                setCurrentReservation(prev => ({
+                                  ...prev,
+                                  type_perso: [...prev.type_perso, e.target.value]
+                                }));
+                                e.target.value = '';
+                              }
+                            }}
+                            className="multiselect-input-field"
+                          />
+                          <button 
+                            className="dropdown-toggle"
+                            onClick={() => setShowCustomizationsDropdown(!showCustomizationsDropdown)}
+                          >
+                            {showCustomizationsDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </button>
+                        </div>
+                        {showCustomizationsDropdown && (
+                          <div className="multiselect-options active">
+                            {customizationsOptions
+                              .filter(option => !currentReservation.type_perso.includes(option))
+                              .map((option) => (
+                                <div
+                                  key={option}
+                                  className="multiselect-option"
+                                  onClick={() => {
+                                    setCurrentReservation(prev => ({
+                                      ...prev,
+                                      type_perso: [...prev.type_perso, option]
+                                    }));
+                                    setShowCustomizationsDropdown(false);
+                                  }}
+                                >
+                                  <Circle size={8} className="mr-2" />
+                                  {option}
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <ul>
+                        {currentReservation.type_perso && currentReservation.type_perso.length > 0 ? (
+                          currentReservation.type_perso.map((type, idx) => (
+                            <li key={idx}>
+                              <Circle size={8} className="mr-2" />
+                              {type}
+                            </li>
+                          ))
+                        ) : (
+                          <li>Aucune personnalisation</li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="invoice-features">
+                    <h3>Fonctionnalités Incluses</h3>
+                    {isEditing ? (
+                      <div className="multiselect">
+                        <div className="multiselect-input">
+                          {currentReservation.fonctionnalite.map((feature) => (
+                            <span key={feature} className="tag">
+                              {feature}
+                              <span
+                                className="tag-remove"
+                                onClick={() => {
+                                  setCurrentReservation(prev => ({
+                                    ...prev,
+                                    fonctionnalite: prev.fonctionnalite.filter(f => f !== feature)
+                                  }));
+                                }}
+                              >
+                                <X size={12} />
+                              </span>
+                            </span>
+                          ))}
+                          <input
+                            type="text"
+                            placeholder="Ajouter une fonctionnalité"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && e.target.value) {
+                                setCurrentReservation(prev => ({
+                                  ...prev,
+                                  fonctionnalite: [...prev.fonctionnalite, e.target.value]
+                                }));
+                                e.target.value = '';
+                              }
+                            }}
+                            className="multiselect-input-field"
+                          />
+                          <button 
+                            className="dropdown-toggle"
+                            onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
+                          >
+                            {showFeaturesDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </button>
+                        </div>
+                        {showFeaturesDropdown && (
+                          <div className="multiselect-options active">
+                            {featuresOptions
+                              .filter(option => !currentReservation.fonctionnalite.includes(option))
+                              .map((option) => (
+                                <div
+                                  key={option}
+                                  className="multiselect-option"
+                                  onClick={() => {
+                                    setCurrentReservation(prev => ({
+                                      ...prev,
+                                      fonctionnalite: [...prev.fonctionnalite, option]
+                                    }));
+                                    setShowFeaturesDropdown(false);
+                                  }}
+                                >
+                                  <Check size={8} className="mr-2" />
+                                  {option}
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <ul>
+                        {currentReservation.fonctionnalite && currentReservation.fonctionnalite.length > 0 ? (
+                          currentReservation.fonctionnalite.map((feature, idx) => (
+                            <li key={idx}>
+                              <Check size={8} className="mr-2" />
+                              {feature}
+                            </li>
+                          ))
+                        ) : (
+                          <li>Aucune fonctionnalité supplémentaire</li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="invoice-total">
+                    <h3>Détail du prix</h3>
+                    {isEditing ? (
+                      <>
+                        <div className="price-edit">
+                          <label>Prix de base:</label>
+                          <div className="price-input">
+                            <input
+                              type="number"
+                              name="prix"
+                              value={currentReservation.prix}
+                              onChange={handleEditInputChange}
+                              min="0"
+                              step="0.01"
+                            />
+                            <span>€</span>
+                          </div>
+                        </div>
+                        <div className="price-edit">
+                          <label>Prix personnalisation:</label>
+                          <div className="price-input">
+                            <input
+                              type="number"
+                              name="prix_perso"
+                              value={currentReservation.prix_perso}
+                              onChange={handleEditInputChange}
+                              min="0"
+                              step="0.01"
+                            />
+                            <span>€</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="price-row">
+                          <span>Prix de base:</span>
+                          <span>{currentReservation.prix || '0'} €</span>
+                        </div>
+                        <div className="price-row">
+                          <span>Prix personnalisation:</span>
+                          <span>{currentReservation.prix_perso || '0'} €</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="total-amount">
+                      <span>Total:</span>
+                      <span>{calculateTotal(currentReservation)} €</span>
+                    </div>
+                  </div>
+                  <div className="invoice-footer">
+                    <p>Merci pour votre confiance !</p>
+                    <p>B2B Réservations - contact@b2b-reservations.com</p>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                {!isEditing ? (
+                  <>
+                    <button
+                      className="filter-btn filter-btn-outline no-print"
+                      onClick={() => setShowViewModal(false)}
+                    >
+                      <X size={16} className="mr-2" />
+                      Fermer
+                    </button>
+                    <button 
+                      className="filter-btn filter-btn-primary no-print"
+                      onClick={printInvoice}
+                    >
+                      <Printer size={16} className="mr-2" />
+                      Imprimer
+                    </button>
+                    <button
+                      className="filter-btn filter-btn-primary no-print"
+                      onClick={enableEditing}
+                    >
+                      <Edit size={16} className="mr-2" />
+                      Modifier
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="filter-btn filter-btn-outline no-print"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      <X size={16} className="mr-2" />
+                      Annuler
+                    </button>
+                    <button
+                      className="filter-btn filter-btn-primary no-print"
+                      onClick={handleUpdateReservation}
+                    >
+                      <CheckCircle size={16} className="mr-2" />
+                      Enregistrer
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
-
-      {/* Modal d'ajout */}
-      {showModal && (
-        <div className="modal-overlay active">
-          <div className="modal">
-            <div className="modal-header">
-              <h2>
-                <Plus size={20} className="mr-2" />
-                Nouvelle Réservation
-              </h2>
-              <button 
-                className="close-btn"
-                onClick={() => setShowModal(false)}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>
-                    <Tag size={16} className="mr-2" />
-                    Formule *
-                  </label>
-                  <select
-                    name="formule"
-                    value={newReservation.formule}
-                    onChange={handleInputChange}
-                    required
-                    className="form-control"
-                  >
-                    <option value="">Sélectionnez une formule</option>
-                    <option value="Starter">Starter</option>
-                    <option value="Pro">Pro</option>
-                    <option value="Enterprise">Enterprise</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>
-                    <DollarSign size={16} className="mr-2" />
-                    Prix *
-                  </label>
-                  <input
-                    type="number"
-                    name="prix"
-                    value={newReservation.prix}
-                    onChange={handleInputChange}
-                    required
-                    min="0"
-                    step="0.01"
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>
-                    <DollarSign size={16} className="mr-2" />
-                    Prix Perso. *
-                  </label>
-                  <input
-                    type="number"
-                    name="prix_perso"
-                    value={newReservation.prix_perso}
-                    onChange={handleInputChange}
-                    required
-                    min="0"
-                    step="0.01"
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>
-                    <User size={16} className="mr-2" />
-                    Nom complet *
-                  </label>
-                  <input
-                    type="text"
-                    name="nom_complet"
-                    value={newReservation.nom_complet}
-                    onChange={handleInputChange}
-                    required
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>
-                    <Briefcase size={16} className="mr-2" />
-                    Entreprise *
-                  </label>
-                  <input
-                    type="text"
-                    name="entreprise"
-                    value={newReservation.entreprise}
-                    onChange={handleInputChange}
-                    required
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>
-                    <Mail size={16} className="mr-2" />
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={newReservation.email}
-                    onChange={handleInputChange}
-                    required
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>
-                    <Calendar size={16} className="mr-2" />
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={newReservation.date}
-                    onChange={handleInputChange}
-                    required
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>
-                    <CheckCircle size={16} className="mr-2" />
-                    Statut *
-                  </label>
-                  <select
-                    name="statut"
-                    value={newReservation.statut}
-                    onChange={handleInputChange}
-                    required
-                    className="form-control"
-                  >
-                    <option value="en_attente">En attente</option>
-                    <option value="signé">Signé</option>
-                    <option value="perdu">Perdu</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="form-group">
-                <label>Types de Personnalisation</label>
-                <div className="multiselect">
-                  <div
-                    className="multiselect-input"
-                    onClick={() => setShowCustomizationsDropdown(!showCustomizationsDropdown)}
-                  >
-                    {newReservation.type_perso.map((type) => (
-                      <span key={type} className="tag">
-                        {type}
-                        <span
-                          className="tag-remove"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveCustomizationType(type);
-                          }}
-                        >
-                          <X size={12} />
-                        </span>
-                      </span>
-                    ))}
-                    <input
-                      type="text"
-                      placeholder="Ajouter un type de personnalisation"
-                      value={currentCustomization}
-                      onChange={(e) => setCurrentCustomization(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddCustomizationType()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowCustomizationsDropdown(true);
-                      }}
-                      className="multiselect-input-field"
-                    />
-                    <button 
-                      className="dropdown-toggle"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowCustomizationsDropdown(!showCustomizationsDropdown);
-                      }}
-                    >
-                      {showCustomizationsDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
-                  </div>
-                  {showCustomizationsDropdown && (
-                    <div className="multiselect-options active">
-                      {customizationsOptions
-                        .filter(
-                          (option) =>
-                            option.toLowerCase().includes(currentCustomization.toLowerCase()) &&
-                            !newReservation.type_perso.includes(option)
-                        )
-                        .map((option) => (
-                          <div
-                            key={option}
-                            className="multiselect-option"
-                            onClick={() => handleCustomizationSelect(option)}
-                          >
-                            <Circle size={8} className="mr-2" />
-                            {option}
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Fonctionnalités Incluses</label>
-                <div className="multiselect">
-                  <div
-                    className="multiselect-input"
-                    onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
-                  >
-                    {newReservation.fonctionnalite.map((feature) => (
-                      <span key={feature} className="tag">
-                        {feature}
-                        <span
-                          className="tag-remove"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveFeature(feature);
-                          }}
-                        >
-                          <X size={12} />
-                        </span>
-                      </span>
-                    ))}
-                    <input
-                      type="text"
-                      placeholder="Ajouter une fonctionnalité"
-                      value={currentFeature}
-                      onChange={(e) => setCurrentFeature(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowFeaturesDropdown(true);
-                      }}
-                      className="multiselect-input-field"
-                    />
-                    <button 
-                      className="dropdown-toggle"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowFeaturesDropdown(!showFeaturesDropdown);
-                      }}
-                    >
-                      {showFeaturesDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
-                  </div>
-                  {showFeaturesDropdown && (
-                    <div className="multiselect-options active">
-                      {featuresOptions
-                        .filter(
-                          (option) =>
-                            option.toLowerCase().includes(currentFeature.toLowerCase()) &&
-                            !newReservation.fonctionnalite.includes(option)
-                        )
-                        .map((option) => (
-                          <div
-                            key={option}
-                            className="multiselect-option"
-                            onClick={() => handleFeatureSelect(option)}
-                          >
-                            <Check size={8} className="mr-2" />
-                            {option}
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button 
-                className="filter-btn filter-btn-outline"
-                onClick={() => setShowModal(false)}
-              >
-                <X size={16} className="mr-2" />
-                Annuler
-              </button>
-              <button
-                className="filter-btn filter-btn-primary"
-                onClick={handleAddReservation}
-                disabled={
-                  !newReservation.formule ||
-                  !newReservation.prix ||
-                  !newReservation.prix_perso ||
-                  !newReservation.nom_complet ||
-                  !newReservation.entreprise ||
-                  !newReservation.email ||
-                  !newReservation.date ||
-                  !newReservation.statut
-                }
-              >
-                <CheckCircle size={16} className="mr-2" />
-                Enregistrer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de visualisation / modification */}
-      {showViewModal && currentReservation && (
-        <div className="modal-overlay active">
-          <div className="modal">
-            <div className="modal-header">
-              <h2>
-                {isEditing ? (
-                  <Edit size={20} className="mr-2" />
-                ) : (
-                  <Eye size={20} className="mr-2" />
-                )}
-                Détails de la Réservation
-              </h2>
-              <button 
-                className="close-btn"
-                onClick={() => setShowViewModal(false)}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-            <div className="invoice-container" id="invoice-print">
-            <div className="invoice-header">
-                  <div>
-                    <div className="invoice-title">Facture</div>
-                    <div className="invoice-number">
-                      Réservation #{currentReservation.id_reservation}
-                    </div>
-                    <div className="invoice-date">
-                      Date: {currentReservation.date ? 
-                        new Date(currentReservation.date).toLocaleDateString('fr-FR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : '-'}
-                    </div>
-                  </div>
-                  <div className="invoice-logo">
-                    <span className="w-6 h-6 bg-blue-500 rounded-full mr-2"></span>
-                    Footspace-solutions
-                  </div>
-                </div>
-                <div className="invoice-details">
-                  <div className="invoice-section">
-                    <h3>Client</h3>
-                    {isEditing ? (
-                      <>
-                        <div className="form-group">
-                          <label>Nom complet</label>
-                          <input
-                            type="text"
-                            name="nom_complet"
-                            value={currentReservation.nom_complet}
-                            onChange={handleEditInputChange}
-                            className="edit-input"
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>Entreprise</label>
-                          <input
-                            type="text"
-                            name="entreprise"
-                            value={currentReservation.entreprise}
-                            onChange={handleEditInputChange}
-                            className="edit-input"
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>Email</label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={currentReservation.email}
-                            onChange={handleEditInputChange}
-                            className="edit-input"
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>Statut</label>
-                          <select
-                            name="statut"
-                            value={currentReservation.statut}
-                            onChange={handleEditInputChange}
-                            className="edit-input"
-                          >
-                            <option value="en_attente">En attente</option>
-                            <option value="signé">Signé</option>
-                            <option value="perdu">Perdu</option>
-                          </select>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <p><strong>Nom:</strong> {currentReservation.nom_complet || '-'}</p>
-                        <p><strong>Entreprise:</strong> {currentReservation.entreprise || '-'}</p>
-                        <p><strong>Email:</strong> {currentReservation.email || '-'}</p>
-                        <p><strong>Statut:</strong> 
-                          <span className={`status ${getStatutClass(currentReservation.statut)}`}>
-                            {currentReservation.statut || 'en_attente'}
-                          </span>
-                        </p>
-                      </>
-                    )}
-                  </div>
-                  <div className="invoice-section">
-                    <h3>Réservation</h3>
-                    {isEditing ? (
-                      <>
-                        <div className="form-group">
-                          <label>Formule</label>
-                          <select
-                            name="formule"
-                            value={currentReservation.formule}
-                            onChange={handleEditInputChange}
-                            className="edit-input"
-                          >
-                            <option value="Starter">Starter</option>
-                            <option value="Pro">Pro</option>
-                            <option value="Enterprise">Enterprise</option>
-                          </select>
-                        </div>
-                        <div className="form-group">
-                          <label>Date</label>
-                          <input
-                            type="date"
-                            name="date"
-                            value={currentReservation.date}
-                            onChange={handleEditInputChange}
-                            className="edit-input"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <p>
-                          <strong>Formule:</strong> 
-                          <span className={`badge ${getBadgeClass(currentReservation.formule)}`}>
-                            {currentReservation.formule || '-'}
-                          </span>
-                        </p>
-                        <p>
-                          <strong>Date:</strong> {currentReservation.date ? 
-                            new Date(currentReservation.date).toLocaleDateString('fr-FR', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            }) : '-'}
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="invoice-personnalisation">
-                  <h3>Types de Personnalisation</h3>
-                  {isEditing ? (
-                    <div className="multiselect">
-                      <div className="multiselect-input">
-                        {currentReservation.type_perso.map((type) => (
-                          <span key={type} className="tag">
-                            {type}
-                            <span
-                              className="tag-remove"
-                              onClick={() => {
-                                setCurrentReservation(prev => ({
-                                  ...prev,
-                                  type_perso: prev.type_perso.filter(t => t !== type)
-                                }));
-                              }}
-                            >
-                              <X size={12} />
-                            </span>
-                          </span>
-                        ))}
-                        <input
-                          type="text"
-                          placeholder="Ajouter un type"
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter' && e.target.value) {
-                              setCurrentReservation(prev => ({
-                                ...prev,
-                                type_perso: [...prev.type_perso, e.target.value]
-                              }));
-                              e.target.value = '';
-                            }
-                          }}
-                          className="multiselect-input-field"
-                        />
-                        <button 
-                          className="dropdown-toggle"
-                          onClick={() => setShowCustomizationsDropdown(!showCustomizationsDropdown)}
-                        >
-                          {showCustomizationsDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-                      </div>
-                      {showCustomizationsDropdown && (
-                        <div className="multiselect-options active">
-                          {customizationsOptions
-                            .filter(option => !currentReservation.type_perso.includes(option))
-                            .map((option) => (
-                              <div
-                                key={option}
-                                className="multiselect-option"
-                                onClick={() => {
-                                  setCurrentReservation(prev => ({
-                                    ...prev,
-                                    type_perso: [...prev.type_perso, option]
-                                  }));
-                                  setShowCustomizationsDropdown(false);
-                                }}
-                              >
-                                <Circle size={8} className="mr-2" />
-                                {option}
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <ul>
-                      {currentReservation.type_perso && currentReservation.type_perso.length > 0 ? (
-                        currentReservation.type_perso.map((type, idx) => (
-                          <li key={idx}>
-                            <Circle size={8} className="mr-2" />
-                            {type}
-                          </li>
-                        ))
-                      ) : (
-                        <li>Aucune personnalisation</li>
-                      )}
-                    </ul>
-                  )}
-                </div>
-                <div className="invoice-features">
-                  <h3>Fonctionnalités Incluses</h3>
-                  {isEditing ? (
-                    <div className="multiselect">
-                      <div className="multiselect-input">
-                        {currentReservation.fonctionnalite.map((feature) => (
-                          <span key={feature} className="tag">
-                            {feature}
-                            <span
-                              className="tag-remove"
-                              onClick={() => {
-                                setCurrentReservation(prev => ({
-                                  ...prev,
-                                  fonctionnalite: prev.fonctionnalite.filter(f => f !== feature)
-                                }));
-                              }}
-                            >
-                              <X size={12} />
-                            </span>
-                          </span>
-                        ))}
-                        <input
-                          type="text"
-                          placeholder="Ajouter une fonctionnalité"
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter' && e.target.value) {
-                              setCurrentReservation(prev => ({
-                                ...prev,
-                                fonctionnalite: [...prev.fonctionnalite, e.target.value]
-                              }));
-                              e.target.value = '';
-                            }
-                          }}
-                          className="multiselect-input-field"
-                        />
-                        <button 
-                          className="dropdown-toggle"
-                          onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
-                        >
-                          {showFeaturesDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-                      </div>
-                      {showFeaturesDropdown && (
-                        <div className="multiselect-options active">
-                          {featuresOptions
-                            .filter(option => !currentReservation.fonctionnalite.includes(option))
-                            .map((option) => (
-                              <div
-                                key={option}
-                                className="multiselect-option"
-                                onClick={() => {
-                                  setCurrentReservation(prev => ({
-                                    ...prev,
-                                    fonctionnalite: [...prev.fonctionnalite, option]
-                                  }));
-                                  setShowFeaturesDropdown(false);
-                                }}
-                              >
-                                <Check size={8} className="mr-2" />
-                                {option}
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <ul>
-                      {currentReservation.fonctionnalite && currentReservation.fonctionnalite.length > 0 ? (
-                        currentReservation.fonctionnalite.map((feature, idx) => (
-                          <li key={idx}>
-                            <Check size={8} className="mr-2" />
-                            {feature}
-                          </li>
-                        ))
-                      ) : (
-                        <li>Aucune fonctionnalité supplémentaire</li>
-                      )}
-                    </ul>
-                  )}
-                </div>
-                <div className="invoice-total">
-                  <h3>Détail du prix</h3>
-                  {isEditing ? (
-                    <>
-                      <div className="price-edit">
-                        <label>Prix de base:</label>
-                        <div className="price-input">
-                          <input
-                            type="number"
-                            name="prix"
-                            value={currentReservation.prix}
-                            onChange={handleEditInputChange}
-                            min="0"
-                            step="0.01"
-                          />
-                          <span>€</span>
-                        </div>
-                      </div>
-                      <div className="price-edit">
-                        <label>Prix personnalisation:</label>
-                        <div className="price-input">
-                          <input
-                            type="number"
-                            name="prix_perso"
-                            value={currentReservation.prix_perso}
-                            onChange={handleEditInputChange}
-                            min="0"
-                            step="0.01"
-                          />
-                          <span>€</span>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="price-row">
-                        <span>Prix de base:</span>
-                        <span>{currentReservation.prix || '0'} €</span>
-                      </div>
-                      <div className="price-row">
-                        <span>Prix personnalisation:</span>
-                        <span>{currentReservation.prix_perso || '0'} €</span>
-                      </div>
-                    </>
-                  )}
-                  <div className="total-amount">
-                    <span>Total:</span>
-                    <span>{calculateTotal(currentReservation)} €</span>
-                  </div>
-                </div>
-                <div className="invoice-footer">
-                  <p>Merci pour votre confiance !</p>
-                  <p>B2B Réservations - contact@b2b-reservations.com</p>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              {!isEditing ? (
-                <>
-                  <button
-                    className="filter-btn filter-btn-outline no-print"
-                    onClick={() => setShowViewModal(false)}
-                  >
-                    <X size={16} className="mr-2" />
-                    Fermer
-                  </button>
-                  <button 
-                    className="filter-btn filter-btn-primary no-print"
-                    onClick={printInvoice}
-                  >
-                    <Printer size={16} className="mr-2" />
-                    Imprimer
-                  </button>
-                  <button
-                    className="filter-btn filter-btn-primary no-print"
-                    onClick={enableEditing}
-                  >
-                    <Edit size={16} className="mr-2" />
-                    Modifier
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="filter-btn filter-btn-outline no-print"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    <X size={16} className="mr-2" />
-                    Annuler
-                  </button>
-                  <button
-                    className="filter-btn filter-btn-primary no-print"
-                    onClick={handleUpdateReservation}
-                  >
-                    <CheckCircle size={16} className="mr-2" />
-                    Enregistrer
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default GestionReservation; 
+export default GestionReservation;
