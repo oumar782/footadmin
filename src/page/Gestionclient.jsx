@@ -1,33 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEye, FaEdit, FaTrash, FaSearch, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
-import './Gestionclient.css';
+import './GestionClient.css';
 
-const Gestionclient = () => {
+const GestionClients = () => {
   // State principal
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterBy, setFilterBy] = useState('all');
-  const [sortBy, setSortBy] = useState('nom_client-asc');
+  const [clientsList, setClientsList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentClientsPage, setCurrentClientsPage] = useState(1);
+  const [totalClientsPages, setTotalClientsPages] = useState(1);
+  const [searchClientsTerm, setSearchClientsTerm] = useState('');
+  const [clientsFilter, setClientsFilter] = useState('all');
+  const [clientsSort, setClientsSort] = useState('nom_client-asc');
 
   // Modals et états associés
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedClient, setSelectedClient] = useState(null);
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [showViewClientModal, setShowViewClientModal] = useState(false);
+  const [showEditClientModal, setShowEditClientModal] = useState(false);
+  const [showDeleteClientModal, setShowDeleteClientModal] = useState(false);
+  const [selectedClientData, setSelectedClientData] = useState(null);
 
   // Formulaires
-  const [newClient, setNewClient] = useState({
+  const [newClientData, setNewClientData] = useState({
     nom_client: '',
     prenom: '',
     email: '',
     statut: 'active'
   });
 
-  const [editClient, setEditClient] = useState({
+  const [editClientData, setEditClientData] = useState({
     id_client: '',
     nom_client: '',
     prenom: '',
@@ -36,153 +36,165 @@ const Gestionclient = () => {
   });
 
   // Toast
-  const [toast, setToast] = useState(null);
+  const [clientToast, setClientToast] = useState(null);
 
   // Constantes
-  const itemsPerPage = 5;
+  const CLIENTS_PER_PAGE = 5;
 
   // Récupérer les clients depuis l'API
-  const fetchClients = async () => {
-    setLoading(true);
+  const fetchClientsData = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/api/client/?search=${searchTerm}&statut=${filterBy}&sort=${sortBy}&page=${currentPage}&limit=${itemsPerPage}`
+        `http://localhost:5000/api/client/?search=${searchClientsTerm}&statut=${clientsFilter}&sort=${clientsSort}&page=${currentClientsPage}&limit=${CLIENTS_PER_PAGE}`
       );
       const data = await response.json();
       if (data.success) {
-        setClients(data.data);
-        setTotalPages(data.pagination.totalPages);
+        setClientsList(data.data);
+        setTotalClientsPages(data.pagination.totalPages);
       }
     } catch (error) {
       console.error('Erreur:', error);
-      showToast('Erreur lors du chargement des clients', 'error');
+      showClientToast('Erreur lors du chargement des clients', 'error');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchClients();
-  }, [searchTerm, filterBy, sortBy, currentPage]);
+    fetchClientsData();
+  }, [searchClientsTerm, clientsFilter, clientsSort, currentClientsPage]);
 
   // Gestion des actions CRUD
-  const handleAddClient = async () => {
+  const handleAddNewClient = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/client/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newClient)
+        body: JSON.stringify(newClientData)
       });
       const data = await response.json();
       if (data.success) {
-        setNewClient({
+        setNewClientData({
           nom_client: '',
           prenom: '',
           email: '',
           statut: 'active'
         });
-        setShowAddModal(false);
-        showToast('Client ajouté avec succès', 'success');
-        fetchClients();
+        setShowAddClientModal(false);
+        showClientToast('Client ajouté avec succès', 'success');
+        fetchClientsData();
       } else {
-        showToast(data.message || 'Erreur lors de l\'ajout', 'error');
+        showClientToast(data.message || 'Erreur lors de l\'ajout', 'error');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      showToast('Erreur lors de l\'ajout du client', 'error');
+      showClientToast('Erreur lors de l\'ajout du client', 'error');
     }
   };
 
-  const handleEditClient = async () => {
+  const handleEditCurrentClient = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/client/${editClient.id_client}`, {
+      const response = await fetch(`http://localhost:5000/api/client/${editClientData.id_client}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editClient)
+        body: JSON.stringify(editClientData)
       });
       const data = await response.json();
       if (data.success) {
-        setShowEditModal(false);
-        showToast('Client modifié avec succès', 'success');
-        fetchClients();
+        setShowEditClientModal(false);
+        showClientToast('Client modifié avec succès', 'success');
+        fetchClientsData();
       } else {
-        showToast(data.message || 'Erreur lors de la modification', 'error');
+        showClientToast(data.message || 'Erreur lors de la modification', 'error');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      showToast('Erreur lors de la modification du client', 'error');
+      showClientToast('Erreur lors de la modification du client', 'error');
     }
   };
 
-  const handleDeleteClient = async () => {
+  const handleDeleteSelectedClient = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/client/${selectedClient.id_client}`, {
+      const response = await fetch(`http://localhost:5000/api/client/${selectedClientData.id_client}`, {
         method: 'DELETE'
       });
       const data = await response.json();
       if (data.success) {
-        setShowDeleteModal(false);
-        showToast('Client supprimé avec succès', 'success');
-        fetchClients();
+        setShowDeleteClientModal(false);
+        showClientToast('Client supprimé avec succès', 'success');
+        if (clientsList.length === 1 && currentClientsPage > 1) {
+          setCurrentClientsPage(currentClientsPage - 1);
+        } else {
+          fetchClientsData();
+        }
       } else {
-        showToast(data.message || 'Erreur lors de la suppression', 'error');
+        showClientToast(data.message || 'Erreur lors de la suppression', 'error');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      showToast('Erreur lors de la suppression du client', 'error');
+      showClientToast('Erreur lors de la suppression du client', 'error');
     }
   };
 
   // Utilitaires
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+  const showClientToast = (message, type = 'info') => {
+    setClientToast({ message, type });
+    setTimeout(() => setClientToast(null), 3000);
   };
 
-  const getFullName = (client) => {
+  const getClientFullName = (client) => {
     return `${client.nom_client} ${client.prenom}`;
   };
 
-  const getInitials = (client) => {
+  const getClientInitials = (client) => {
     return `${client.nom_client[0]}${client.prenom[0]}`.toUpperCase();
   };
 
   // Render
   return (
-    <div className="containerts">
-      <div className="table-containerss">
+    <div className="clients-management-container">
+      <div className="clients-table-wrapper">
         {/* Header */}
-        <div className="headercli">
+        <div className="clients-header-section">
           <h1>Gestion des Clients</h1>
           <button 
-            className="btnclit btn-primarycli"
-            onClick={() => setShowAddModal(true)}
+            className="clients-add-btn clients-primary-btn"
+            onClick={() => setShowAddClientModal(true)}
           >
-            Ajouter Client
+            <FaPlus /> Ajouter Client
           </button>
         </div>
 
         {/* Filtres et recherche */}
-        <div className="toolbar">
-          <div className="search-box">
-            <FaSearch className="search-icon" />
+        <div className="clients-toolbar-section">
+          <div className="clients-search-container">
+            <FaSearch className="clients-search-icon" />
             <input
               type="text"
-              className="search-input"
+              className="clients-search-input"
               placeholder="Rechercher..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchClientsTerm}
+              onChange={(e) => setSearchClientsTerm(e.target.value)}
             />
+            {searchClientsTerm && (
+              <button 
+                className="clients-clear-search"
+                onClick={() => setSearchClientsTerm('')}
+              >
+                <FaTimes />
+              </button>
+            )}
           </div>
-          <div className="filters">
+          <div className="clients-filters-container">
             <select 
-              className="filter-select"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              className="clients-filter-select"
+              value={clientsSort}
+              onChange={(e) => setClientsSort(e.target.value)}
             >
               <option value="nom_client-asc">Trier par nom (A-Z)</option>
               <option value="nom_client-desc">Trier par nom (Z-A)</option>
@@ -190,9 +202,9 @@ const Gestionclient = () => {
               <option value="created_at-asc">Date ancienne</option>
             </select>
             <select 
-              className="filter-select"
-              value={filterBy}
-              onChange={(e) => setFilterBy(e.target.value)}
+              className="clients-filter-select"
+              value={clientsFilter}
+              onChange={(e) => setClientsFilter(e.target.value)}
             >
               <option value="all">Tous les clients</option>
               <option value="active">Clients actifs</option>
@@ -202,8 +214,8 @@ const Gestionclient = () => {
         </div>
 
         {/* Tableau des clients */}
-        <div className="overflow-x-auto">
-          <table className="table">
+        <div className="clients-table-responsive">
+          <table className="clients-data-table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -215,48 +227,51 @@ const Gestionclient = () => {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan="6" className="loading-text">Chargement en cours...</td>
+                  <td colSpan="6" className="clients-loading-message">Chargement en cours...</td>
                 </tr>
-              ) : clients.length > 0 ? (
-                clients.map(client => (
+              ) : clientsList.length > 0 ? (
+                clientsList.map(client => (
                   <tr key={client.id_client}>
                     <td>{client.id_client}</td>
                     <td>{client.nom_client}</td>
                     <td>{client.prenom}</td>
                     <td>{client.email}</td>
                     <td>
-                      <span className={`badge ${client.statut === 'active' ? 'badge-active' : 'badge-inactive'}`}>
+                      <span className={`clients-status-badge ${client.statut === 'active' ? 'clients-active-badge' : 'clients-inactive-badge'}`}>
                         {client.statut === 'active' ? 'Actif' : 'Inactif'}
                       </span>
                     </td>
                     <td>
-                      <div className="actions">
+                      <div className="clients-actions-group">
                         <button 
-                          className="btn btn-sm btn-secondary"
+                          className="clients-action-btn clients-view-btn"
                           onClick={() => {
-                            setSelectedClient(client);
-                            setShowViewModal(true);
+                            setSelectedClientData(client);
+                            setShowViewClientModal(true);
                           }}
+                          title="Voir détails"
                         >
                           <FaEye />
                         </button>
                         <button 
-                          className="btn btn-sm btn-secondary"
+                          className="clients-action-btn clients-edit-btn"
                           onClick={() => {
-                            setEditClient({ ...client });
-                            setShowEditModal(true);
+                            setEditClientData({ ...client });
+                            setShowEditClientModal(true);
                           }}
+                          title="Modifier"
                         >
                           <FaEdit />
                         </button>
                         <button 
-                          className="btn btn-sm btn-danger"
+                          className="clients-action-btn clients-delete-btn"
                           onClick={() => {
-                            setSelectedClient(client);
-                            setShowDeleteModal(true);
+                            setSelectedClientData(client);
+                            setShowDeleteClientModal(true);
                           }}
+                          title="Supprimer"
                         >
                           <FaTrash />
                         </button>
@@ -266,7 +281,7 @@ const Gestionclient = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="no-data">Aucun client trouvé</td>
+                  <td colSpan="6" className="clients-no-data">Aucun client trouvé</td>
                 </tr>
               )}
             </tbody>
@@ -274,19 +289,19 @@ const Gestionclient = () => {
         </div>
 
         {/* Pagination */}
-        <div className="pagination">
+        <div className="clients-pagination-section">
           <button 
-            className="pagination-btn"
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
+            className="clients-pagination-btn"
+            onClick={() => setCurrentClientsPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentClientsPage === 1}
           >
             <FaChevronLeft />
           </button>
-          <span>Page {currentPage} sur {totalPages}</span>
+          <span>Page {currentClientsPage} sur {totalClientsPages}</span>
           <button 
-            className="pagination-btn"
-            onClick={() => setCurrentPage(prev => prev + 1)}
-            disabled={currentPage === totalPages || clients.length < itemsPerPage}
+            className="clients-pagination-btn"
+            onClick={() => setCurrentClientsPage(prev => prev + 1)}
+            disabled={currentClientsPage === totalClientsPages || clientsList.length < CLIENTS_PER_PAGE}
           >
             <FaChevronRight />
           </button>
@@ -294,65 +309,65 @@ const Gestionclient = () => {
       </div>
 
       {/* Modal Ajout Client */}
-      {showAddModal && (
-        <div className="modal-overlaygc">
-          <div className="modalgc">
-            <div className="modal-header">
+      {showAddClientModal && (
+        <div className="clients-modal-overlay">
+          <div className="clients-add-modal">
+            <div className="clients-modal-header">
               <h3>Ajouter un Client</h3>
-              <button onClick={() => setShowAddModal(false)}>
+              <button className="clients-close-btn" onClick={() => setShowAddClientModal(false)}>
                 <FaTimes />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="clients-modal-body">
+              <div className="clients-form-group">
                 <label>Nom</label>
                 <input
                   type="text"
-                  value={newClient.nom_client}
-                  onChange={(e) => setNewClient({...newClient, nom_client: e.target.value})}
+                  value={newClientData.nom_client}
+                  onChange={(e) => setNewClientData({...newClientData, nom_client: e.target.value})}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="clients-form-group">
                 <label>Prénom</label>
                 <input
                   type="text"
-                  value={newClient.prenom}
-                  onChange={(e) => setNewClient({...newClient, prenom: e.target.value})}
+                  value={newClientData.prenom}
+                  onChange={(e) => setNewClientData({...newClientData, prenom: e.target.value})}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="clients-form-group">
                 <label>Email</label>
                 <input
                   type="email"
-                  value={newClient.email}
-                  onChange={(e) => setNewClient({...newClient, email: e.target.value})}
+                  value={newClientData.email}
+                  onChange={(e) => setNewClientData({...newClientData, email: e.target.value})}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="clients-form-group">
                 <label>Statut</label>
                 <select
-                  value={newClient.statut}
-                  onChange={(e) => setNewClient({...newClient, statut: e.target.value})}
+                  value={newClientData.statut}
+                  onChange={(e) => setNewClientData({...newClientData, statut: e.target.value})}
                 >
                   <option value="active">Actif</option>
                   <option value="inactive">Inactif</option>
                 </select>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="clients-modal-footer">
               <button 
-                className="btn btn-secondary"
-                onClick={() => setShowAddModal(false)}
+                className="clients-secondary-btn"
+                onClick={() => setShowAddClientModal(false)}
               >
                 Annuler
               </button>
               <button 
-                className="btn btn-primary"
-                onClick={handleAddClient}
-                disabled={!newClient.nom_client || !newClient.prenom || !newClient.email}
+                className="clients-primary-btn"
+                onClick={handleAddNewClient}
+                disabled={!newClientData.nom_client || !newClientData.prenom || !newClientData.email}
               >
                 Enregistrer
               </button>
@@ -362,55 +377,54 @@ const Gestionclient = () => {
       )}
 
       {/* Modal Visualisation Client */}
-      {showViewModal && selectedClient && (
-        <div className="modal-overlaygc">
-          <div className="modalgc">
-            <div className="modal-header">
+      {showViewClientModal && selectedClientData && (
+        <div className="clients-modal-overlay">
+          <div className="clients-view-modal">
+            <div className="clients-modal-header">
               <h3>Détails du Client</h3>
-              <button onClick={() => setShowViewModal(false)}>
+              <button className="clients-close-btn" onClick={() => setShowViewClientModal(false)}>
                 <FaTimes />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="client-header">
-                <div className="client-avatar">
-                  {getInitials(selectedClient)}
+            <div className="clients-modal-body">
+              <div className="clients-detail-header">
+                <div className="clients-avatar">
+                  {getClientInitials(selectedClientData)}
                 </div>
-                <div className="client-details">
-                  <h2>{getFullName(selectedClient)}</h2>
-                  <span className={`badge ${selectedClient.statut === 'active' ? 'badge-active' : 'badge-inactive'}`}>
-                    {selectedClient.statut === 'active' ? 'Actif' : 'Inactif'}
+                <div className="clients-detail-info">
+                  <h2>{getClientFullName(selectedClientData)}</h2>
+                  <span className={`clients-status-badge ${selectedClientData.statut === 'active' ? 'clients-active-badge' : 'clients-inactive-badge'}`}>
+                    {selectedClientData.statut === 'active' ? 'Actif' : 'Inactif'}
                   </span>
                 </div>
               </div>
-              <div className="detail-item">
-                <div className="detail-label">ID</div>
-                <div className="detail-value">{selectedClient.id_client}</div>
+              <div className="clients-detail-item">
+                <div className="clients-detail-label">ID</div>
+                <div className="clients-detail-value">{selectedClientData.id_client}</div>
               </div>
-              <div className="detail-item">
-                <div className="detail-label">Nom</div>
-                <div className="detail-value">{selectedClient.nom_client}</div>
+              <div className="clients-detail-item">
+                <div className="clients-detail-label">Nom</div>
+                <div className="clients-detail-value">{selectedClientData.nom_client}</div>
               </div>
-              <div className="detail-item">
-                <div className="detail-label">Prénom</div>
-                <div className="detail-value">{selectedClient.prenom}</div>
+              <div className="clients-detail-item">
+                <div className="clients-detail-label">Prénom</div>
+                <div className="clients-detail-value">{selectedClientData.prenom}</div>
               </div>
-              <div className="detail-item">
-                <div className="detail-label">Email</div>
-                <div className="detail-value">{selectedClient.email}</div>
+              <div className="clients-detail-item">
+                <div className="clients-detail-label">Email</div>
+                <div className="clients-detail-value">{selectedClientData.email}</div>
               </div>
-              <div className="detail-item">
-                <div className="detail-label">Statut</div>
-                <div className="detail-value">
-                  {selectedClient.statut === 'active' ? 'Actif' : 'Inactif'}
+              <div className="clients-detail-item">
+                <div className="clients-detail-label">Statut</div>
+                <div className="clients-detail-value">
+                  {selectedClientData.statut === 'active' ? 'Actif' : 'Inactif'}
                 </div>
               </div>
-            
             </div>
-            <div className="modal-footer">
+            <div className="clients-modal-footer">
               <button 
-                className="btn btn-primary"
-                onClick={() => setShowViewModal(false)}
+                className="clients-primary-btn"
+                onClick={() => setShowViewClientModal(false)}
               >
                 Fermer
               </button>
@@ -420,65 +434,65 @@ const Gestionclient = () => {
       )}
 
       {/* Modal Modification Client */}
-      {showEditModal && (
-        <div className="modal-overlaygc">
-          <div className="modalgc">
-            <div className="modal-header">
+      {showEditClientModal && (
+        <div className="clients-modal-overlay">
+          <div className="clients-edit-modal">
+            <div className="clients-modal-header">
               <h3>Modifier le Client</h3>
-              <button onClick={() => setShowEditModal(false)}>
+              <button className="clients-close-btn" onClick={() => setShowEditClientModal(false)}>
                 <FaTimes />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="clients-modal-body">
+              <div className="clients-form-group">
                 <label>Nom</label>
                 <input
                   type="text"
-                  value={editClient.nom_client}
-                  onChange={(e) => setEditClient({...editClient, nom_client: e.target.value})}
+                  value={editClientData.nom_client}
+                  onChange={(e) => setEditClientData({...editClientData, nom_client: e.target.value})}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="clients-form-group">
                 <label>Prénom</label>
                 <input
                   type="text"
-                  value={editClient.prenom}
-                  onChange={(e) => setEditClient({...editClient, prenom: e.target.value})}
+                  value={editClientData.prenom}
+                  onChange={(e) => setEditClientData({...editClientData, prenom: e.target.value})}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="clients-form-group">
                 <label>Email</label>
                 <input
                   type="email"
-                  value={editClient.email}
-                  onChange={(e) => setEditClient({...editClient, email: e.target.value})}
+                  value={editClientData.email}
+                  onChange={(e) => setEditClientData({...editClientData, email: e.target.value})}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="clients-form-group">
                 <label>Statut</label>
                 <select
-                  value={editClient.statut}
-                  onChange={(e) => setEditClient({...editClient, statut: e.target.value})}
+                  value={editClientData.statut}
+                  onChange={(e) => setEditClientData({...editClientData, statut: e.target.value})}
                 >
                   <option value="active">Actif</option>
                   <option value="inactive">Inactif</option>
                 </select>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="clients-modal-footer">
               <button 
-                className="btn btn-secondary"
-                onClick={() => setShowEditModal(false)}
+                className="clients-secondary-btn"
+                onClick={() => setShowEditClientModal(false)}
               >
                 Annuler
               </button>
               <button 
-                className="btn btn-primary"
-                onClick={handleEditClient}
-                disabled={!editClient.nom_client || !editClient.prenom || !editClient.email}
+                className="clients-primary-btn"
+                onClick={handleEditCurrentClient}
+                disabled={!editClientData.nom_client || !editClientData.prenom || !editClientData.email}
               >
                 Enregistrer
               </button>
@@ -488,38 +502,38 @@ const Gestionclient = () => {
       )}
 
       {/* Modal Confirmation Suppression */}
-      {showDeleteModal && selectedClient && (
-        <div className="modal-overlaygc">
-          <div className="modal">
-            <div className="modal-header">
+      {showDeleteClientModal && selectedClientData && (
+        <div className="clients-modal-overlay">
+          <div className="clients-delete-modal">
+            <div className="clients-modal-header">
               <h3>Confirmer la suppression</h3>
-              <button onClick={() => setShowDeleteModal(false)}>
+              <button className="clients-close-btn" onClick={() => setShowDeleteClientModal(false)}>
                 <FaTimes />
               </button>
             </div>
-            <div className="modal-bodygc">
-              <div className="warning-container">
-                <div className="warning-icon">
-                  <FaTimes />
+            <div className="clients-delete-modal-body">
+              <div className="clients-warning-container">
+                <div className="clients-warning-icon">
+                  <FaTrash />
                 </div>
-                <p>Êtes-vous sûr de vouloir supprimer le client {getFullName(selectedClient)} ?</p>
+                <p>Êtes-vous sûr de vouloir supprimer le client <strong>{getClientFullName(selectedClientData)}</strong> ?</p>
               </div>
-              <p className="warning-subtext">
-                Cette action est irréversible et supprimera toutes les données associées.
+              <p className="clients-warning-text">
+                Cette action est irréversible et supprimera toutes les données associées à ce client.
               </p>
             </div>
-            <div className="modal-footer">
+            <div className="clients-modal-footer">
               <button 
-                className="btn btn-secondary"
-                onClick={() => setShowDeleteModal(false)}
+                className="clients-secondary-btn"
+                onClick={() => setShowDeleteClientModal(false)}
               >
                 Annuler
               </button>
               <button 
-                className="btn btn-danger"
-                onClick={handleDeleteClient}
+                className="clients-danger-btn"
+                onClick={handleDeleteSelectedClient}
               >
-                Supprimer
+                <FaTrash /> Supprimer définitivement
               </button>
             </div>
           </div>
@@ -527,13 +541,13 @@ const Gestionclient = () => {
       )}
 
       {/* Toast Notification */}
-      {toast && (
-        <div className={`toast toast-${toast.type}`}>
-          {toast.message}
+      {clientToast && (
+        <div className={`clients-toast clients-toast-${clientToast.type}`}>
+          {clientToast.message}
         </div>
       )}
     </div>
   );
 };
 
-export default Gestionclient;
+export default GestionClients;

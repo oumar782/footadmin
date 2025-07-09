@@ -2,59 +2,55 @@ import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, UserCircle } from 'lucide-react';
 import './Authentification.css';
 
-const AuthComponentFS = () => {
-  const [formDataFS, setFormDataFS] = useState({
-    nomFS: '',
-    emailFS: '',
-    motdepasseFS: '',
-    roleFS: ''
+const AuthComponent = () => {
+  const [formData, setFormData] = useState({
+    nom: '',
+    email: '',
+    motdepasse: '',
+    role: ''
   });
-  const [showPasswordFS, setShowPasswordFS] = useState(false);
-  const [messageFS, setMessageFS] = useState({ text: '', isSuccess: false, show: false });
-  const [isLoadingFS, setIsLoadingFS] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState({ text: '', isSuccess: false, show: false });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChangeFS = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormDataFS(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const togglePasswordVisibilityFS = () => {
-    setShowPasswordFS(!showPasswordFS);
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
-  const showMessageFS = (text, isSuccess) => {
-    setMessageFS({ text, isSuccess, show: true });
-    setTimeout(() => setMessageFS(prev => ({ ...prev, show: false })), 5000);
+  const showMessage = (text, isSuccess) => {
+    setMessage({ text, isSuccess, show: true });
+    setTimeout(() => setMessage(prev => ({ ...prev, show: false })), 5000);
   };
 
-  const closeMessageFS = () => {
-    setMessageFS(prev => ({ ...prev, show: false }));
+  const closeMessage = () => {
+    setMessage(prev => ({ ...prev, show: false }));
   };
 
-  const handleSubmitFS = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const { emailFS, motdepasseFS, roleFS } = formDataFS;
+    const { email, motdepasse, role } = formData;
 
-    if (!emailFS || !motdepasseFS || !roleFS) {
-      showMessageFS('Veuillez remplir tous les champs', false);
+    if (!email || !motdepasse || !role) {
+      showMessage('Veuillez remplir tous les champs', false);
       return;
     }
     
-    setIsLoadingFS(true);
+    setIsLoading(true);
     
     try {
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: emailFS,
-          motdepasse: motdepasseFS,
-          role: roleFS
-        })
+        body: JSON.stringify({ email, motdepasse })
       });
 
       const data = await response.json();
@@ -66,12 +62,12 @@ const AuthComponentFS = () => {
       if (data.success && data.user) {
         const { id, nom, email, role } = data.user;
 
-        localStorage.setItem('userIdFS', id);
-        localStorage.setItem('userNomFS', nom);
-        localStorage.setItem('userEmailFS', email);
-        localStorage.setItem('userRoleFS', role);
+        localStorage.setItem('userId', id);
+        localStorage.setItem('userNom', nom);
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('userRole', role);
 
-        showMessageFS('Connexion réussie!', true);
+        showMessage('Connexion réussie!', true);
 
         setTimeout(() => {
           switch (role) {
@@ -87,100 +83,99 @@ const AuthComponentFS = () => {
           }
         }, 2000);
       } else {
-        showMessageFS("Données utilisateur invalides", false);
+        showMessage("Données utilisateur invalides", false);
       }
 
     } catch (error) {
-      showMessageFS(error.message || 'Erreur de communication avec le serveur', false);
+      showMessage(error.message || 'Erreur de communication avec le serveur', false);
       console.error('Erreur:', error);
     } finally {
-      setIsLoadingFS(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="fs-auth-app">
-      <div className={`fs-message-box ${messageFS.isSuccess ? 'fs-success' : 'fs-error'} ${messageFS.show ? 'fs-show' : ''}`}>
-        <span>{messageFS.text}</span>
-        <button className="fs-close-btn" onClick={closeMessageFS}>&times;</button>
+      <div className={`fs-message-box ${message.isSuccess ? 'fs-success' : 'fs-error'} ${message.show ? 'fs-show' : ''}`}>
+        <span>{message.text}</span>
+        <button className="fs-close-btn" onClick={closeMessage}>&times;</button>
       </div>
 
       <div className="fs-auth-container">
-        {isLoadingFS && (
+        {isLoading && (
           <div className="fs-loader">
             <div className="fs-spinner"></div>
           </div>
         )}
 
         <div className="fs-auth-header">
-         
-          <h1>FootSolutions Admin</h1>
+          <h1>FootSpace Admin Suite</h1>
           <p>Veuillez vous authentifier pour rejoindre votre poste</p>
         </div>
 
         <div className="fs-auth-body">
-          <form id="fs-authForm" onSubmit={handleSubmitFS}>
+          <form id="authForm" onSubmit={handleSubmit}>
             <div className="fs-form-group">
-              <label htmlFor="nomFS">Nom complet</label>
+              <label htmlFor="nom">Nom complet</label>
               <div className="fs-input-field">
                 <User className="fs-input-icon" size={18} />
                 <input 
                   type="text" 
-                  id="nomFS" 
-                  name="nomFS" 
+                  id="nom" 
+                  name="nom" 
                   placeholder="Entrez votre nom complet" 
-                  value={formDataFS.nomFS}
-                  onChange={handleInputChangeFS}
+                  value={formData.nom}
+                  onChange={handleInputChange}
                 />
               </div>
             </div>
 
             <div className="fs-form-group">
-              <label htmlFor="emailFS">Adresse email</label>
+              <label htmlFor="email">Adresse email</label>
               <div className="fs-input-field">
                 <Mail className="fs-input-icon" size={18} />
                 <input 
                   type="email" 
-                  id="emailFS" 
-                  name="emailFS" 
+                  id="email" 
+                  name="email" 
                   placeholder="Entrez votre email" 
-                  value={formDataFS.emailFS}
-                  onChange={handleInputChangeFS}
+                  value={formData.email}
+                  onChange={handleInputChange}
                   required 
                 />
               </div>
             </div>
 
             <div className="fs-form-group">
-              <label htmlFor="motdepasseFS">Mot de passe</label>
+              <label htmlFor="motdepasse">Mot de passe</label>
               <div className="fs-input-field">
                 <Lock className="fs-input-icon" size={18} />
                 <input 
-                  type={showPasswordFS ? "text" : "password"} 
-                  id="motdepasseFS" 
-                  name="motdepasseFS" 
+                  type={showPassword ? "text" : "password"} 
+                  id="motdepasse" 
+                  name="motdepasse" 
                   placeholder="Créez un mot de passe" 
-                  value={formDataFS.motdepasseFS}
-                  onChange={handleInputChangeFS}
+                  value={formData.motdepasse}
+                  onChange={handleInputChange}
                   required 
                 />
-                {showPasswordFS ? (
-                  <EyeOff className="fs-password-toggle" size={18} onClick={togglePasswordVisibilityFS} />
+                {showPassword ? (
+                  <EyeOff className="fs-password-toggle" size={18} onClick={togglePasswordVisibility} />
                 ) : (
-                  <Eye className="fs-password-toggle" size={18} onClick={togglePasswordVisibilityFS} />
+                  <Eye className="fs-password-toggle" size={18} onClick={togglePasswordVisibility} />
                 )}
               </div>
             </div>
 
             <div className="fs-form-group">
-              <label htmlFor="roleFS">Rôle</label>
+              <label htmlFor="role">Rôle</label>
               <div className="fs-input-field">
                 <UserCircle className="fs-input-icon" size={18} />
                 <select 
-                  id="roleFS" 
-                  name="roleFS" 
-                  value={formDataFS.roleFS}
-                  onChange={handleInputChangeFS}
+                  id="role" 
+                  name="role" 
+                  value={formData.role}
+                  onChange={handleInputChange}
                   required
                 >
                   <option value="" disabled>Sélectionnez votre rôle</option>
@@ -198,4 +193,4 @@ const AuthComponentFS = () => {
   );
 };
 
-export default AuthComponentFS;
+export default AuthComponent;

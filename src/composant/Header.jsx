@@ -48,11 +48,9 @@ const Header = () => {
     <header className="app-headercont">
       <div className="app-header-containerss">
         <div className="app-header-titlese">
-          <button id="open-sidebar" className="app-header-menu-button">
-            ☰
-          </button>
+         
           <h1 className="app-header-heading">
-            FootSpace Admin suite - {userInfo.name || "Invité"} "{userInfo.role || "Non connecté"}"
+            Foot Admin suite - {userInfo.name || "Invité"} "{userInfo.role || "Non connecté"}"
           </h1>
         </div>
 

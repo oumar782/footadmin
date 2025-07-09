@@ -18,7 +18,6 @@ import Demonstrations from './page/Demonstration';
   {/* composant de l interface  Administrateur */}
 import Sideadmin from './composant/sidebaradd';
 import Administrateur from './page/Administrateur';
-import Dashboard from './page/Dashboard';
 import Suiviclient from './page/suiviclient';
 import Suivireservation from './page/SuiviReservation';
 import Suivipartenariat from './page/Suivipartenariats';
@@ -79,7 +78,6 @@ function App() {
          <Route element={<MainLayoutadmin />}>
              <Route path="/Administrateur" element={<Administrateur />} />
              <Route path="/utilisateur" element={<User />} />
-             <Route path="/dashboard" element={<Dashboard />} />
              <Route path="/suiviclient" element={<Suiviclient />} />
              <Route path="/suivireservation" element={<Suivireservation />} />
              <Route path="/suivipartenariats" element={<Suivipartenariat />} />

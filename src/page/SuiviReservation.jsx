@@ -799,7 +799,7 @@ const GestionReservation = () => {
         {/* Cartes de statistiques */}
         <div className="stats-grid">
           <div className="stat-card">
-            <div className="stat-icon bg-blue-100 text-blue-600">
+            <div className="stat-icon bg-red-100 text-red-600">
               <Layers size={24} />
             </div>
             <div>

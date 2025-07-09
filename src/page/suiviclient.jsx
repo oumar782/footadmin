@@ -148,53 +148,53 @@ const Gestionclient = () => {
   const getInitials = (client) => `${client.nom_client[0]}${client.prenom[0]}`.toUpperCase();
 
   return (
-    <div className="containerts">
-      <div className="table-containerss">
-        <div className="headercli">
+    <div className="gc-container">
+      <div className="gc-table-container">
+        <div className="gc-header">
           <h1>Gestion des Clients</h1>
-          <button className="btnclit btn-primarycli" onClick={() => setShowAddModal(true)}>
+          <button className="gc-btn gc-btn-primary" onClick={() => setShowAddModal(true)}>
             <FaPlus /> Ajouter Client
           </button>
         </div>
 
-        <div className="dashboard-stats">
-          <div className="stat-card stat-active">
+        <div className="gc-dashboard-stats">
+          <div className="gc-stat-card gc-stat-active">
             <h3>Clients Actifs</h3>
-            <div className="stat-value">{stats.active}</div>
-            <div className="stat-trend">
+            <div className="gc-stat-value">{stats.active}</div>
+            <div className="gc-stat-trend">
               {stats.activePerMinute > 0 ? '+' : ''}{stats.activePerMinute}/min
             </div>
           </div>
-          <div className="stat-card stat-inactive">
+          <div className="gc-stat-card gc-stat-inactive">
             <h3>Clients Inactifs</h3>
-            <div className="stat-value">{stats.inactive}</div>
-            <div className="stat-trend">
+            <div className="gc-stat-value">{stats.inactive}</div>
+            <div className="gc-stat-trend">
               {stats.inactivePerMinute > 0 ? '+' : ''}{stats.inactivePerMinute}/min
             </div>
           </div>
-          <div className="stat-card stat-total">
+          <div className="gc-stat-card gc-stat-total">
             <h3>Total Clients</h3>
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-trend">
+            <div className="gc-stat-value">{stats.total}</div>
+            <div className="gc-stat-trend">
               {stats.totalPerMinute > 0 ? '+' : ''}{stats.totalPerMinute}/min
             </div>
           </div>
         </div>
 
-        <div className="toolbar">
-          <div className="search-box">
-            <FaSearch className="search-icon" />
+        <div className="gc-toolbar">
+          <div className="gc-search-box">
+            <FaSearch className="gc-search-icon" />
             <input
               type="text"
-              className="search-input"
+              className="gc-search-input"
               placeholder="Rechercher..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="filters">
+          <div className="gc-filters">
             <select 
-              className="filter-select"
+              className="gc-filter-select"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
@@ -204,7 +204,7 @@ const Gestionclient = () => {
               <option value="created_at-asc">Date ancienne</option>
             </select>
             <select 
-              className="filter-select"
+              className="gc-filter-select"
               value={filterBy}
               onChange={(e) => setFilterBy(e.target.value)}
             >
@@ -215,8 +215,8 @@ const Gestionclient = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="table">
+        <div className="gc-overflow-x-auto">
+          <table className="gc-table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -230,7 +230,7 @@ const Gestionclient = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="loading-text">Chargement en cours...</td>
+                  <td colSpan="6" className="gc-loading-text">Chargement en cours...</td>
                 </tr>
               ) : clients.length > 0 ? (
                 clients.map(client => (
@@ -240,28 +240,28 @@ const Gestionclient = () => {
                     <td>{client.prenom}</td>
                     <td>{client.email}</td>
                     <td>
-                      <span className={`badge ${client.statut === 'active' ? 'badge-active' : 'badge-inactive'}`}>
+                      <span className={`gc-badge ${client.statut === 'active' ? 'gc-badge-active' : 'gc-badge-inactive'}`}>
                         {client.statut === 'active' ? 'Actif' : 'Inactif'}
                       </span>
                     </td>
                     <td>
-                      <div className="actions">
+                      <div className="gc-actions">
                         <button 
-                          className="btn btn-sm btn-secondary"
+                          className="gc-btn gc-btn-sm gc-btn-secondary"
                           onClick={() => { setSelectedClient(client); setShowViewModal(true); }}
                           title="Voir détails"
                         >
                           <FaEye />
                         </button>
                         <button 
-                          className="btn btn-sm btn-secondary"
+                          className="gc-btn gc-btn-sm gc-btn-secondary"
                           onClick={() => { setEditClient({ ...client }); setShowEditModal(true); }}
                           title="Modifier"
                         >
                           <FaEdit />
                         </button>
                         <button 
-                          className="btn btn-sm btn-danger"
+                          className="gc-btn gc-btn-sm gc-btn-danger"
                           onClick={() => { setSelectedClient(client); setShowDeleteModal(true); }}
                           title="Supprimer"
                         >
@@ -273,16 +273,16 @@ const Gestionclient = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="no-data">Aucun client trouvé</td>
+                  <td colSpan="6" className="gc-no-data">Aucun client trouvé</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="pagination">
+        <div className="gc-pagination">
           <button 
-            className="pagination-btn"
+            className="gc-pagination-btn"
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
           >
@@ -290,7 +290,7 @@ const Gestionclient = () => {
           </button>
           <span>Page {currentPage} sur {totalPages}</span>
           <button 
-            className="pagination-btn"
+            className="gc-pagination-btn"
             onClick={() => setCurrentPage(prev => prev + 1)}
             disabled={currentPage === totalPages || clients.length < itemsPerPage}
           >
@@ -300,14 +300,14 @@ const Gestionclient = () => {
       </div>
 
       {showAddModal && (
-        <div className="modal-overlaygc">
-          <div className="modalgc">
-            <div className="modal-header">
+        <div className="gc-modal-overlay">
+          <div className="gc-modal">
+            <div className="gc-modal-header">
               <h3>Ajouter un Client</h3>
               <button onClick={() => setShowAddModal(false)}><FaTimes /></button>
             </div>
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="gc-modal-body">
+              <div className="gc-form-group">
                 <label>Nom</label>
                 <input
                   type="text"
@@ -315,7 +315,7 @@ const Gestionclient = () => {
                   onChange={(e) => setNewClient({...newClient, nom_client: e.target.value})}
                 />
               </div>
-              <div className="form-group">
+              <div className="gc-form-group">
                 <label>Prénom</label>
                 <input
                   type="text"
@@ -323,7 +323,7 @@ const Gestionclient = () => {
                   onChange={(e) => setNewClient({...newClient, prenom: e.target.value})}
                 />
               </div>
-              <div className="form-group">
+              <div className="gc-form-group">
                 <label>Email</label>
                 <input
                   type="email"
@@ -331,7 +331,7 @@ const Gestionclient = () => {
                   onChange={(e) => setNewClient({...newClient, email: e.target.value})}
                 />
               </div>
-              <div className="form-group">
+              <div className="gc-form-group">
                 <label>Statut</label>
                 <select
                   value={newClient.statut}
@@ -342,12 +342,12 @@ const Gestionclient = () => {
                 </select>
               </div>
             </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
+            <div className="gc-modal-footer">
+              <button className="gc-btn gc-btn-secondary" onClick={() => setShowAddModal(false)}>
                 Annuler
               </button>
               <button 
-                className="btn btn-primary" 
+                className="gc-btn gc-btn-primary" 
                 onClick={handleAddClient}
                 disabled={!newClient.nom_client || !newClient.prenom || !newClient.email}
               >
@@ -359,23 +359,23 @@ const Gestionclient = () => {
       )}
 
       {showViewModal && selectedClient && (
-        <div className="modal-overlaygc">
-          <div className="modalgc">
-            <div className="modal-header">
+        <div className="gc-modal-overlay">
+          <div className="gc-modal">
+            <div className="gc-modal-header">
               <h3>Détails du Client</h3>
               <button onClick={() => setShowViewModal(false)}><FaTimes /></button>
             </div>
-            <div className="modal-body">
-              <div className="client-details">
-                <div className="client-avatar">
+            <div className="gc-modal-body">
+              <div className="gc-client-details">
+                <div className="gc-client-avatar">
                   <span>{getInitials(selectedClient)}</span>
                 </div>
-                <div className="client-info">
+                <div className="gc-client-info">
                   <h4>{getFullName(selectedClient)}</h4>
                   <p><strong>Email:</strong> {selectedClient.email}</p>
                   <p>
                     <strong>Statut:</strong> 
-                    <span className={`badge ${selectedClient.statut === 'active' ? 'badge-active' : 'badge-inactive'}`}>
+                    <span className={`gc-badge ${selectedClient.statut === 'active' ? 'gc-badge-active' : 'gc-badge-inactive'}`}>
                       {selectedClient.statut === 'active' ? 'Actif' : 'Inactif'}
                     </span>
                   </p>
@@ -383,8 +383,8 @@ const Gestionclient = () => {
                 </div>
               </div>
             </div>
-            <div className="modal-footer">
-              <button className="btn btn-primary" onClick={() => setShowViewModal(false)}>
+            <div className="gc-modal-footer">
+              <button className="gc-btn gc-btn-primary" onClick={() => setShowViewModal(false)}>
                 Fermer
               </button>
             </div>
@@ -393,14 +393,14 @@ const Gestionclient = () => {
       )}
 
       {showEditModal && (
-        <div className="modal-overlaygc">
-          <div className="modalgc">
-            <div className="modal-header">
+        <div className="gc-modal-overlay">
+          <div className="gc-modal">
+            <div className="gc-modal-header">
               <h3>Modifier Client</h3>
               <button onClick={() => setShowEditModal(false)}><FaTimes /></button>
             </div>
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="gc-modal-body">
+              <div className="gc-form-group">
                 <label>Nom</label>
                 <input
                   type="text"
@@ -408,7 +408,7 @@ const Gestionclient = () => {
                   onChange={(e) => setEditClient({...editClient, nom_client: e.target.value})}
                 />
               </div>
-              <div className="form-group">
+              <div className="gc-form-group">
                 <label>Prénom</label>
                 <input
                   type="text"
@@ -416,7 +416,7 @@ const Gestionclient = () => {
                   onChange={(e) => setEditClient({...editClient, prenom: e.target.value})}
                 />
               </div>
-              <div className="form-group">
+              <div className="gc-form-group">
                 <label>Email</label>
                 <input
                   type="email"
@@ -424,7 +424,7 @@ const Gestionclient = () => {
                   onChange={(e) => setEditClient({...editClient, email: e.target.value})}
                 />
               </div>
-              <div className="form-group">
+              <div className="gc-form-group">
                 <label>Statut</label>
                 <select
                   value={editClient.statut}
@@ -435,12 +435,12 @@ const Gestionclient = () => {
                 </select>
               </div>
             </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+            <div className="gc-modal-footer">
+              <button className="gc-btn gc-btn-secondary" onClick={() => setShowEditModal(false)}>
                 Annuler
               </button>
               <button 
-                className="btn btn-primary" 
+                className="gc-btn gc-btn-primary" 
                 onClick={handleEditClient}
                 disabled={!editClient.nom_client || !editClient.prenom || !editClient.email}
               >
@@ -452,21 +452,21 @@ const Gestionclient = () => {
       )}
 
       {showDeleteModal && selectedClient && (
-        <div className="modal-overlaygc">
-          <div className="modalgc">
-            <div className="modal-header">
+        <div className="gc-modal-overlay">
+          <div className="gc-modal">
+            <div className="gc-modal-header">
               <h3>Supprimer Client</h3>
               <button onClick={() => setShowDeleteModal(false)}><FaTimes /></button>
             </div>
-            <div className="modal-body">
+            <div className="gc-modal-body">
               <p>Êtes-vous sûr de vouloir supprimer le client <strong>{getFullName(selectedClient)}</strong> ?</p>
               <p>Cette action est irréversible.</p>
             </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>
+            <div className="gc-modal-footer">
+              <button className="gc-btn gc-btn-secondary" onClick={() => setShowDeleteModal(false)}>
                 Annuler
               </button>
-              <button className="btn btn-danger" onClick={handleDeleteClient}>
+              <button className="gc-btn gc-btn-danger" onClick={handleDeleteClient}>
                 Supprimer
               </button>
             </div>
@@ -475,7 +475,7 @@ const Gestionclient = () => {
       )}
 
       {toast && (
-        <div className={`toast toast-${toast.type}`}>
+        <div className={`gc-toast gc-toast-${toast.type}`}>
           {toast.message}
         </div>
       )}

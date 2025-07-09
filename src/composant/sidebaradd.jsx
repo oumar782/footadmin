@@ -14,7 +14,6 @@ import {
 import footLogos from '../assets/footsolutions.png';
 import './side.css';
 const menuItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Gestion des utilisateurs", url: "/utilisateur", icon: BarChart3 },
   { title: "Suivi des Clients", url: "/suiviclient", icon: Users },
   { title: "Suivi des Réservations", url: "/suivireservation", icon: Calendar },

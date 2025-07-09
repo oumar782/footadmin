@@ -119,11 +119,7 @@ const Sidebar = () => {
         <div className="sidebar-content">
           <div className="user-profile-container">
             <div className="user-profile">
-              <img 
-                className="user-avatar" 
-                src="https://randomuser.me/api/portraits/men/32.jpg" 
-                alt="Admin" 
-              />
+         
               {!isCollapsed && (
                 <div className="user-info">
                   <p className="user-name">{userInfo.name}</p>
